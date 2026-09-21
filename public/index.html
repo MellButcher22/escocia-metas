@@ -21,7 +21,8 @@
 *{box-sizing:border-box}
 
 body{
-margin:0;background:#020817 url('meta_escocia.png') center top/cover fixed no-repeat;
+margin:0;
+background:#020817 url('meta_escocia.png') center top/cover fixed no-repeat;
 color:var(--text);
 font:14px Arial,sans-serif
 }
@@ -162,7 +163,7 @@ font-size:65px
 
 .stats{
 display:grid;
-grid-template-columns:repeat(4,1fr);
+grid-template-columns:repeat(3,1fr);
 gap:10px;
 margin:12px 0
 }
@@ -332,9 +333,13 @@ font-weight:bold;
 font-size:10px
 }
 
-.ent{background:#07985b}
-.pen{background:#b27b00}
-.no{background:#c8233d}
+.ent{
+background:#07985b
+}
+
+.no{
+background:#c8233d
+}
 
 .act{
 background:#082b55;
@@ -398,9 +403,13 @@ display:inline-block;
 margin-right:7px
 }
 
-.gd{background:var(--g)}
-.yd{background:var(--y)}
-.rd{background:var(--r)}
+.gd{
+background:var(--g)
+}
+
+.rd{
+background:var(--r)
+}
 
 .update{
 padding:8px 0;
@@ -490,6 +499,45 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 gap:10px
+}
+
+.advItem{
+padding:15px;
+background:linear-gradient(145deg,#071e3b,#041328);
+border:1px solid #6b2937;
+border-left:4px solid #ff3d59;
+border-radius:10px;
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:15px
+}
+
+.advInfo{
+flex:1
+}
+
+.advInfo h3{
+margin:0 0 8px;
+color:#ff7083;
+font-size:15px
+}
+
+.advInfo p{
+margin:5px 0;
+color:#d9e7fa;
+line-height:1.5
+}
+
+.advMeta{
+font-size:11px;
+color:#8fa9c8;
+margin-top:8px
+}
+
+.advActions{
+display:flex;
+gap:5px
 }
 
 .modal{
@@ -605,6 +653,15 @@ background:#07985b!important;
 border-color:#18d57a!important
 }
 
+.empty{
+padding:25px;
+text-align:center;
+color:#8fa9c8;
+background:#061a32;
+border:1px dashed #164b82;
+border-radius:10px
+}
+
 @media(max-width:1050px){
 .app{
 grid-template-columns:190px 1fr
@@ -650,11 +707,13 @@ display:none
 }
 
 .weekManagerItem,
-.autoBox{
+.autoBox,
+.advItem{
 display:block
 }
 
-.weekActions{
+.weekActions,
+.advActions{
 margin-top:10px
 }
 }
@@ -728,6 +787,10 @@ Acesso ao painel de metas
 
 <button onclick="abrirPagina('membros',this)">
 ♟ &nbsp; Membros
+</button>
+
+<button onclick="abrirPagina('advertencias',this)">
+⚠️ &nbsp; Advertências
 </button>
 
 <button onclick="abrirPagina('regras',this)">
@@ -860,28 +923,6 @@ Metas Entregues
 
 <div class="stat">
 
-<div class="ico y">◷</div>
-
-<div>
-
-<span class="muted">
-Pendentes
-</span>
-
-<div class="num" id="pen">
-0
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<div class="stat">
-
 <div class="ico r">×</div>
 
 <div>
@@ -932,11 +973,6 @@ Todos
 <button
 onclick="setF('Entregou',this)">
 ✓ Entregou
-</button>
-
-<button
-onclick="setF('Pendente',this)">
-◷ Pendente
 </button>
 
 <button
@@ -1073,6 +1109,40 @@ onclick="abrirMembro()">
 
 </div>
 
+<!-- ADVERTÊNCIAS -->
+
+<div id="advertencias" class="page">
+
+<div class="tablebox">
+
+<div class="thead">
+
+<div>
+
+<h2>⚠️ Advertências</h2>
+
+<p style="color:#9db5d4;margin-top:4px">
+Controle de advertências aplicadas aos membros da Escócia.
+</p>
+
+</div>
+
+<button
+class="btn primary"
+onclick="abrirAdvertencia()">
+＋ Adicionar ADV
+</button>
+
+</div>
+
+<br>
+
+<div id="advertenciasLista" class="list"></div>
+
+</div>
+
+</div>
+
 <!-- REGRAS -->
 
 <div id="regras" class="page">
@@ -1163,19 +1233,6 @@ Entregou
 <div class="row">
 
 <span>
-<i class="dot yd"></i>
-Pendente
-</span>
-
-<b id="rp">
-0
-</b>
-
-</div>
-
-<div class="row">
-
-<span>
 <i class="dot rd"></i>
 Não entregou
 </span>
@@ -1237,12 +1294,12 @@ Adicionar membro
 </div>
 
 <div>
+
 <label>Status</label>
 
 <select id="mStatus">
 
 <option>Entregou</option>
-<option>Pendente</option>
 <option>Não entregou</option>
 
 </select>
@@ -1272,6 +1329,86 @@ Salvar
 <button
 class="cancel"
 onclick="fecharModal('modalMembro')">
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- MODAL ADVERTÊNCIA -->
+
+<div id="modalAdvertencia" class="modal">
+
+<div class="modalBox">
+
+<h2>
+⚠️ Adicionar Advertência
+</h2>
+
+<div>
+
+<label>Membro</label>
+
+<select id="advMembro">
+
+<option value="">
+Selecione o membro
+</option>
+
+</select>
+
+</div>
+
+<div class="grid">
+
+<div>
+
+<label>Data</label>
+
+<input
+id="advData"
+type="date">
+
+</div>
+
+<div>
+
+<label>Responsável</label>
+
+<input
+id="advResponsavel"
+placeholder="Quem aplicou a ADV?">
+
+</div>
+
+</div>
+
+<label>Motivo</label>
+
+<input
+id="advMotivo"
+placeholder="Ex.: Não cumpriu a meta">
+
+<label>Observação</label>
+
+<textarea
+id="advObservacao"
+placeholder="Adicione alguma observação, se necessário..."></textarea>
+
+<div class="modalButtons">
+
+<button
+class="save"
+onclick="salvarAdvertencia()">
+Salvar ADV
+</button>
+
+<button
+class="cancel"
+onclick="fecharModal('modalAdvertencia')">
 Cancelar
 </button>
 
@@ -1436,6 +1573,8 @@ dados.membros=[];
 
 let membroIds=[];
 
+let advertencias=[];
+
 let filtro='Todos';
 
 let membroEditando=-1;
@@ -1510,7 +1649,6 @@ fim:'03/10/2026'
 
 /* ==========================
    SALVAR CONFIGURAÇÕES
-   NO POSTGRESQL
 ========================== */
 
 async function salvarDados(){
@@ -1579,10 +1717,6 @@ return false;
 }
 
 
-/* ==========================
-   SALVAR SEMANAS
-========================== */
-
 async function salvarSemanas(){
 
 return await salvarDados();
@@ -1592,7 +1726,6 @@ return await salvarDados();
 
 /* ==========================
    CARREGAR CONFIGURAÇÕES
-   DO POSTGRESQL
 ========================== */
 
 async function carregarConfiguracoesServidor(){
@@ -1620,12 +1753,6 @@ if(!resultado.ok){
 return false;
 
 }
-
-
-/*
-   Se já existe configuração
-   no PostgreSQL, usa ela.
-*/
 
 if(resultado.config){
 
@@ -1669,13 +1796,6 @@ return true;
 
 }
 
-
-/*
-   Se ainda não existe configuração
-   no banco, envia a configuração
-   atual para o PostgreSQL.
-*/
-
 await salvarDados();
 
 console.log(
@@ -1700,7 +1820,6 @@ return false;
 
 /* ==========================
    CARREGAR MEMBROS
-   DO SERVIDOR
 ========================== */
 
 async function carregarMembrosServidor(){
@@ -1746,7 +1865,9 @@ item[0]||'',
 item[1]||'',
 item[2]||'',
 item[3]||'',
-item[4]||'Pendente',
+item[4]==='Pendente'
+?'Não entregou'
+:(item[4]||'Não entregou'),
 item[5]||'—',
 Number(item[6]||0)
 
@@ -1765,6 +1886,60 @@ return true;
 }catch(e){
 
 console.error(e);
+
+return false;
+
+}
+
+}
+
+
+/* ==========================
+   CARREGAR ADVERTÊNCIAS
+========================== */
+
+async function carregarAdvertenciasServidor(){
+
+try{
+
+const resposta=
+await fetch('/api/advertencias');
+
+if(!resposta.ok){
+
+console.error(
+'Não foi possível carregar as advertências.'
+);
+
+return false;
+
+}
+
+const resultado=
+await resposta.json();
+
+if(
+!resultado.ok ||
+!Array.isArray(resultado.advertencias)
+){
+
+return false;
+
+}
+
+advertencias=
+resultado.advertencias;
+
+renderAdvertencias();
+
+return true;
+
+}catch(e){
+
+console.error(
+'Erro ao carregar advertências:',
+e
+);
 
 return false;
 
@@ -1819,6 +1994,8 @@ renderMembros();
 renderRanking();
 
 renderHistorico();
+
+renderAdvertencias();
 
 document.getElementById('regrasTexto').textContent=
 dados.regras;
@@ -1880,8 +2057,6 @@ let m=x.m;
 let classe=
 m[4]==='Entregou'
 ?'ent'
-:m[4]==='Pendente'
-?'pen'
 :'no';
 
 return `
@@ -1935,14 +2110,9 @@ dados.membros.filter(
 m=>m[4]==='Entregou'
 ).length;
 
-let pendente=
-dados.membros.filter(
-m=>m[4]==='Pendente'
-).length;
-
 let nao=
 dados.membros.filter(
-m=>m[4]==='Não entregou'
+m=>m[4]!=='Entregou'
 ).length;
 
 let total=
@@ -1961,17 +2131,11 @@ total;
 document.getElementById('ent').textContent=
 entregou;
 
-document.getElementById('pen').textContent=
-pendente;
-
 document.getElementById('nao').textContent=
 nao;
 
 document.getElementById('re').textContent=
 entregou;
-
-document.getElementById('rp').textContent=
-pendente;
 
 document.getElementById('rn').textContent=
 nao;
@@ -2001,8 +2165,6 @@ dados.membros
 <span class="dot ${
 m[4]==='Entregou'
 ?'gd'
-:m[4]==='Pendente'
-?'yd'
 :'rd'
 }">
 </span>
@@ -2658,7 +2820,7 @@ membroEditando=index;
 let m=
 index===-1
 ?
-['','','','','Pendente','—',0]
+['','','','','Não entregou','—',0]
 :
 dados.membros[index];
 
@@ -2684,7 +2846,9 @@ document.getElementById('mDiscord').value=
 m[3];
 
 document.getElementById('mStatus').value=
-m[4];
+m[4]==='Pendente'
+?'Não entregou'
+:m[4];
 
 document.getElementById('mEntrega').value=
 m[5];
@@ -2812,7 +2976,9 @@ item[0]||'',
 item[1]||'',
 item[2]||'',
 item[3]||'',
-item[4]||'Pendente',
+item[4]==='Pendente'
+?'Não entregou'
+:(item[4]||'Não entregou'),
 item[5]||'—',
 Number(item[6]||0)
 
@@ -2903,7 +3069,9 @@ item[0]||'',
 item[1]||'',
 item[2]||'',
 item[3]||'',
-item[4]||'Pendente',
+item[4]==='Pendente'
+?'Não entregou'
+:(item[4]||'Não entregou'),
 item[5]||'—',
 Number(item[6]||0)
 
@@ -2957,8 +3125,6 @@ ${m[3]}
 <span class="status ${
 m[4]==='Entregou'
 ?'ent'
-:m[4]==='Pendente'
-?'pen'
 :'no'
 }">
 
@@ -2992,6 +3158,349 @@ Excluir
 
 `)
 .join('');
+
+}
+
+
+/* ==========================
+   ADVERTÊNCIAS
+========================== */
+
+function abrirAdvertencia(){
+
+let select=
+document.getElementById('advMembro');
+
+select.innerHTML=`
+
+<option value="">
+Selecione o membro
+</option>
+
+`+
+
+dados.membros
+.map((m,i)=>`
+
+<option value="${membroIds[i]}">
+${m[0]}
+</option>
+
+`)
+.join('');
+
+document.getElementById('advData').value=
+new Date().toISOString().split('T')[0];
+
+document.getElementById('advMotivo').value='';
+
+document.getElementById('advObservacao').value='';
+
+document.getElementById('advResponsavel').value=
+document.getElementById('who').textContent || '';
+
+document.getElementById('modalAdvertencia')
+.style.display='flex';
+
+}
+
+
+async function salvarAdvertencia(){
+
+const select=
+document.getElementById('advMembro');
+
+const membroId=
+select.value;
+
+const membroIndex=
+dados.membros.findIndex(
+(m,i)=>
+String(membroIds[i])===String(membroId)
+);
+
+if(membroIndex===-1){
+
+alert('Selecione um membro.');
+
+return;
+
+}
+
+const membro=
+dados.membros[membroIndex];
+
+const data=
+document.getElementById('advData')
+.value;
+
+const motivo=
+document.getElementById('advMotivo')
+.value
+.trim();
+
+const responsavel=
+document.getElementById('advResponsavel')
+.value
+.trim();
+
+const observacao=
+document.getElementById('advObservacao')
+.value
+.trim();
+
+if(!data){
+
+alert('Informe a data da advertência.');
+
+return;
+
+}
+
+if(!motivo){
+
+alert('Informe o motivo da advertência.');
+
+return;
+
+}
+
+if(!responsavel){
+
+alert('Informe o responsável pela ADV.');
+
+return;
+
+}
+
+try{
+
+const resposta=
+await fetch(
+'/api/advertencias',
+{
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify({
+
+membro_id:Number(membroId),
+
+membro_nome:membro[0],
+
+motivo:motivo,
+
+data:data,
+
+responsavel:responsavel,
+
+observacao:observacao
+
+})
+
+}
+);
+
+const resultado=
+await resposta.json();
+
+if(
+!resposta.ok ||
+!resultado.ok
+){
+
+alert(
+resultado.error ||
+'Não foi possível salvar a ADV.'
+);
+
+return;
+
+}
+
+advertencias.unshift(
+resultado.advertencia
+);
+
+fecharModal('modalAdvertencia');
+
+renderAdvertencias();
+
+alert('⚠️ Advertência registrada com sucesso!');
+
+}catch(e){
+
+console.error(e);
+
+alert(
+'Não foi possível conectar ao servidor.'
+);
+
+}
+
+}
+
+
+function formatarDataADV(data){
+
+if(!data)return '—';
+
+if(
+data.includes('-')
+){
+
+const partes=
+data.split('-');
+
+if(partes.length===3){
+
+return partes[2]+'/'+partes[1]+'/'+partes[0];
+
+}
+
+}
+
+return data;
+
+}
+
+
+function renderAdvertencias(){
+
+const lista=
+document.getElementById('advertenciasLista');
+
+if(!lista)return;
+
+if(!advertencias.length){
+
+lista.innerHTML=`
+
+<div class="empty">
+
+⚠️ Nenhuma advertência registrada.
+
+</div>
+
+`;
+
+return;
+
+}
+
+lista.innerHTML=
+
+advertencias
+.map(adv=>`
+
+<div class="advItem">
+
+<div class="advInfo">
+
+<h3>
+⚠️ ${adv.membro_nome}
+</h3>
+
+<p>
+<b>Motivo:</b> ${adv.motivo}
+</p>
+
+${
+adv.observacao
+?
+`
+<p>
+<b>Observação:</b> ${adv.observacao}
+</p>
+`
+:
+''
+}
+
+<div class="advMeta">
+
+📅 ${formatarDataADV(adv.data)}
+&nbsp; • &nbsp;
+👮 ${adv.responsavel}
+
+</div>
+
+</div>
+
+<div class="advActions">
+
+<button
+class="act"
+onclick="excluirAdvertencia(${adv.id})">
+
+🗑️ Excluir
+
+</button>
+
+</div>
+
+</div>
+
+`)
+.join('');
+
+}
+
+
+async function excluirAdvertencia(id){
+
+if(
+!confirm(
+'Deseja realmente excluir esta advertência?'
+)
+)return;
+
+try{
+
+const resposta=
+await fetch(
+'/api/advertencias/'+id,
+{
+method:'DELETE'
+}
+);
+
+const resultado=
+await resposta.json();
+
+if(
+!resposta.ok ||
+!resultado.ok
+){
+
+alert(
+resultado.error ||
+'Não foi possível excluir a advertência.'
+);
+
+return;
+
+}
+
+advertencias=
+advertencias.filter(
+adv=>Number(adv.id)!==Number(id)
+);
+
+renderAdvertencias();
+
+}catch(e){
+
+console.error(e);
+
+alert(
+'Não foi possível conectar ao servidor.'
+);
+
+}
 
 }
 
@@ -3179,8 +3688,6 @@ Entrega: ${m[5]}
 <span class="status ${
 m[4]==='Entregou'
 ?'ent'
-:m[4]==='Pendente'
-?'pen'
 :'no'
 }">
 
@@ -3374,18 +3881,24 @@ resultado.user.name[0];
 
 
 /*
-   PRIMEIRO CARREGA AS CONFIGURAÇÕES
-   DO POSTGRESQL
+   CARREGA CONFIGURAÇÕES
 */
 
 await carregarConfiguracoesServidor();
 
 
 /*
-   DEPOIS CARREGA OS MEMBROS
+   CARREGA MEMBROS
 */
 
 await carregarMembrosServidor();
+
+
+/*
+   CARREGA ADVERTÊNCIAS
+*/
+
+await carregarAdvertenciasServidor();
 
 }else{
 
@@ -3424,7 +3937,7 @@ verificarSemanaAutomatica,
 60000
 );
 
-
 </script>
+
 </body>
 </html>
