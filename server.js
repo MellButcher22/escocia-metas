@@ -3,6 +3,7 @@ const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const fs = require("fs");
 const path = require("path");
+const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,11 +11,31 @@ const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "data", "users.json");
 const MEMBERS_FILE = path.join(__dirname, "data", "membros.json");
 
+// =====================================
+// POSTGRESQL
+// =====================================
+
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    })
+  : null;
+
+
+// =====================================
+// EXPRESS
+// =====================================
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || "escocia-local-session-change-before-publish",
+  secret:
+    process.env.SESSION_SECRET ||
+    "escocia-local-session-change-before-publish",
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -26,9 +47,9 @@ app.use(session({
 }));
 
 
-// ===============================
+// =====================================
 // USUÁRIOS
-// ===============================
+// =====================================
 
 function ensureData() {
   const dir = path.dirname(DATA_FILE);
@@ -81,9 +102,9 @@ function publicUser(user) {
 }
 
 
-// ===============================
+// =====================================
 // LOGIN
-// ===============================
+// =====================================
 
 app.post("/api/login", async (req, res) => {
   try {
@@ -124,7 +145,6 @@ app.post("/api/login", async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(error);
 
     return res.status(500).json({
@@ -135,11 +155,11 @@ app.post("/api/login", async (req, res) => {
 });
 
 
-// ===============================
-// MEMBROS DA ESCÓCIA
-// ===============================
+// =====================================
+// MEMBROS - BANCO DE DADOS
+// =====================================
 
-function ensureMembers() {
+function ensureMembersFile() {
   const dir = path.dirname(MEMBERS_FILE);
 
   if (!fs.existsSync(dir)) {
@@ -155,154 +175,355 @@ function ensureMembers() {
   }
 }
 
-function readMembers() {
-  ensureMembers();
+function readMembersFile() {
+  ensureMembersFile();
 
   return JSON.parse(
     fs.readFileSync(MEMBERS_FILE, "utf8")
   );
 }
 
-function saveMembers(members) {
-  ensureMembers();
 
-  fs.writeFileSync(
-    MEMBERS_FILE,
-    JSON.stringify(members, null, 2),
-    "utf8"
+// Cria a tabela no PostgreSQL
+async function ensureMembersTable() {
+  if (!pool) {
+    console.log(
+      "DATABASE_URL não configurada. Usando arquivo local."
+    );
+    return;
+  }
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS membros (
+      id BIGINT PRIMARY KEY,
+      data JSONB NOT NULL
+    )
+  `);
+
+  // Verifica se o banco está vazio
+  const result = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM membros"
+  );
+
+  const total = result.rows[0].total;
+
+  // Se estiver vazio, importa os membros existentes do JSON
+  if (total === 0) {
+    const membros = readMembersFile();
+
+    for (const membro of membros) {
+      await pool.query(
+        `
+        INSERT INTO membros (id, data)
+        VALUES ($1, $2)
+        ON CONFLICT (id) DO NOTHING
+        `,
+        [
+          Number(membro.id),
+          membro
+        ]
+      );
+    }
+
+    console.log(
+      `Banco inicializado com ${membros.length} membros.`
+    );
+  }
+
+  console.log("PostgreSQL conectado com sucesso.");
+}
+
+
+// Ler membros
+async function readMembers() {
+  if (!pool) {
+    return readMembersFile();
+  }
+
+  const result = await pool.query(
+    "SELECT data FROM membros ORDER BY id"
+  );
+
+  return result.rows.map(
+    row => row.data
   );
 }
 
 
-// Ver todos os membros
-app.get("/api/membros", (req, res) => {
+// =====================================
+// VER MEMBROS
+// =====================================
 
-  if (!req.session.user) {
-    return res.status(401).json({
+app.get("/api/membros", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        ok: false,
+        error: "Não autenticado."
+      });
+    }
+
+    const membros = await readMembers();
+
+    res.json({
+      ok: true,
+      membros
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
       ok: false,
-      error: "Não autenticado."
+      error: "Erro ao carregar membros."
     });
   }
-
-  res.json({
-    ok: true,
-    membros: readMembers()
-  });
 });
 
 
-// Adicionar membro
-app.post("/api/membros", (req, res) => {
+// =====================================
+// ADICIONAR MEMBRO
+// =====================================
 
-  if (!req.session.user) {
-    return res.status(401).json({
+app.post("/api/membros", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        ok: false,
+        error: "Não autenticado."
+      });
+    }
+
+    const novoMembro = {
+      id: Date.now(),
+      ...req.body
+    };
+
+    if (!pool) {
+      const membros = readMembersFile();
+
+      membros.push(novoMembro);
+
+      fs.writeFileSync(
+        MEMBERS_FILE,
+        JSON.stringify(membros, null, 2),
+        "utf8"
+      );
+
+      return res.json({
+        ok: true,
+        membro: novoMembro,
+        membros
+      });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO membros (id, data)
+      VALUES ($1, $2)
+      `,
+      [
+        Number(novoMembro.id),
+        novoMembro
+      ]
+    );
+
+    const membros = await readMembers();
+
+    res.json({
+      ok: true,
+      membro: novoMembro,
+      membros
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
       ok: false,
-      error: "Não autenticado."
+      error: "Erro ao adicionar membro."
     });
   }
-
-  const membros = readMembers();
-
-  const novoMembro = {
-    id: Date.now(),
-    ...req.body
-  };
-
-  membros.push(novoMembro);
-
-  saveMembers(membros);
-
-  res.json({
-    ok: true,
-    membro: novoMembro,
-    membros
-  });
 });
 
 
-// Editar membro
-app.put("/api/membros/:id", (req, res) => {
+// =====================================
+// EDITAR MEMBRO
+// =====================================
 
-  if (!req.session.user) {
-    return res.status(401).json({
+app.put("/api/membros/:id", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        ok: false,
+        error: "Não autenticado."
+      });
+    }
+
+    const id = Number(req.params.id);
+
+    if (!pool) {
+      const membros = readMembersFile();
+
+      const index = membros.findIndex(
+        membro => Number(membro.id) === id
+      );
+
+      if (index === -1) {
+        return res.status(404).json({
+          ok: false,
+          error: "Membro não encontrado."
+        });
+      }
+
+      membros[index] = {
+        ...membros[index],
+        ...req.body,
+        id
+      };
+
+      fs.writeFileSync(
+        MEMBERS_FILE,
+        JSON.stringify(membros, null, 2),
+        "utf8"
+      );
+
+      return res.json({
+        ok: true,
+        membro: membros[index],
+        membros
+      });
+    }
+
+    const atual = await pool.query(
+      "SELECT data FROM membros WHERE id = $1",
+      [id]
+    );
+
+    if (atual.rows.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        error: "Membro não encontrado."
+      });
+    }
+
+    const membroAtual = atual.rows[0].data;
+
+    const membroAtualizado = {
+      ...membroAtual,
+      ...req.body,
+      id
+    };
+
+    await pool.query(
+      `
+      UPDATE membros
+      SET data = $1
+      WHERE id = $2
+      `,
+      [
+        membroAtualizado,
+        id
+      ]
+    );
+
+    const membros = await readMembers();
+
+    res.json({
+      ok: true,
+      membro: membroAtualizado,
+      membros
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
       ok: false,
-      error: "Não autenticado."
+      error: "Erro ao editar membro."
     });
   }
-
-  const id = Number(req.params.id);
-
-  const membros = readMembers();
-
-  const index = membros.findIndex(
-    membro => membro.id === id
-  );
-
-  if (index === -1) {
-    return res.status(404).json({
-      ok: false,
-      error: "Membro não encontrado."
-    });
-  }
-
-  membros[index] = {
-    ...membros[index],
-    ...req.body,
-    id
-  };
-
-  saveMembers(membros);
-
-  res.json({
-    ok: true,
-    membro: membros[index],
-    membros
-  });
 });
 
 
-// Excluir membro
-app.delete("/api/membros/:id", (req, res) => {
+// =====================================
+// EXCLUIR MEMBRO
+// =====================================
 
-  if (!req.session.user) {
-    return res.status(401).json({
+app.delete("/api/membros/:id", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        ok: false,
+        error: "Não autenticado."
+      });
+    }
+
+    const id = Number(req.params.id);
+
+    if (!pool) {
+      const membros = readMembersFile();
+
+      const quantidadeAntes = membros.length;
+
+      const novosMembros = membros.filter(
+        membro => Number(membro.id) !== id
+      );
+
+      if (novosMembros.length === quantidadeAntes) {
+        return res.status(404).json({
+          ok: false,
+          error: "Membro não encontrado."
+        });
+      }
+
+      fs.writeFileSync(
+        MEMBERS_FILE,
+        JSON.stringify(novosMembros, null, 2),
+        "utf8"
+      );
+
+      return res.json({
+        ok: true,
+        membros: novosMembros
+      });
+    }
+
+    const result = await pool.query(
+      "DELETE FROM membros WHERE id = $1",
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        ok: false,
+        error: "Membro não encontrado."
+      });
+    }
+
+    const membros = await readMembers();
+
+    res.json({
+      ok: true,
+      membros
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
       ok: false,
-      error: "Não autenticado."
+      error: "Erro ao excluir membro."
     });
   }
-
-  const id = Number(req.params.id);
-
-  let membros = readMembers();
-
-  const quantidadeAntes = membros.length;
-
-  membros = membros.filter(
-    membro => membro.id !== id
-  );
-
-  if (membros.length === quantidadeAntes) {
-    return res.status(404).json({
-      ok: false,
-      error: "Membro não encontrado."
-    });
-  }
-
-  saveMembers(membros);
-
-  res.json({
-    ok: true,
-    membros
-  });
 });
 
 
-// ===============================
+// =====================================
 // USUÁRIO LOGADO
-// ===============================
+// =====================================
 
 app.get("/api/me", (req, res) => {
-
   if (!req.session.user) {
     return res.status(401).json({
       ok: false,
@@ -317,28 +538,24 @@ app.get("/api/me", (req, res) => {
 });
 
 
-// ===============================
+// =====================================
 // LOGOUT
-// ===============================
+// =====================================
 
 app.post("/api/logout", (req, res) => {
-
   req.session.destroy(() => {
-
     res.json({
       ok: true
     });
-
   });
 });
 
 
-// ===============================
+// =====================================
 // ÁREA ADMINISTRATIVA
-// ===============================
+// =====================================
 
 app.get("/api/admin-only", (req, res) => {
-
   if (!req.session.user) {
     return res.status(401).json({
       ok: false,
@@ -360,9 +577,9 @@ app.get("/api/admin-only", (req, res) => {
 });
 
 
-// ===============================
+// =====================================
 // SITE
-// ===============================
+// =====================================
 
 app.use(
   express.static(
@@ -371,7 +588,6 @@ app.use(
 );
 
 app.get("*splat", (req, res) => {
-
   res.sendFile(
     path.join(
       __dirname,
@@ -379,21 +595,33 @@ app.get("*splat", (req, res) => {
       "index.html"
     )
   );
-
 });
 
 
-// ===============================
-// INICIAR
-// ===============================
+// =====================================
+// INICIAR SERVIDOR
+// =====================================
 
-ensureData();
-ensureMembers();
+async function startServer() {
+  try {
+    ensureData();
 
-app.listen(PORT, () => {
+    await ensureMembersTable();
 
-  console.log(
-    `Escócia - Entrega de Metas rodando em http://localhost:${PORT}`
-  );
+    app.listen(PORT, () => {
+      console.log(
+        `Escócia - Entrega de Metas rodando em http://localhost:${PORT}`
+      );
+    });
 
-});
+  } catch (error) {
+    console.error(
+      "Erro ao iniciar o servidor:",
+      error
+    );
+
+    process.exit(1);
+  }
+}
+
+startServer();
