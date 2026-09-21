@@ -1419,10 +1419,10 @@ let dados;
 
 try{
 
-dados=
+dados =
 JSON.parse(
 localStorage.getItem('escocia_dados')
-)||padrao;
+) || padrao;
 
 }catch(e){
 
@@ -1440,94 +1440,6 @@ let filtro='Todos';
 
 let membroEditando=-1;
 
-/* ==========================
-   CARREGAR MEMBROS DO SERVIDOR
-========================== */
-
-async function carregarMembrosServidor(){
-
-try{
-
-const resposta=await fetch('/api/membros');
-
-if(!resposta.ok){
-
-console.log('Não foi possível carregar membros.');
-
-return false;
-
-}
-
-const resultado=await resposta.json();
-
-if(!resultado.ok || !Array.isArray(resultado.membros)){
-
-return false;
-
-}
-
-membroIds=[];
-dados.membros=[];
-
-resultado.membros.forEach(item=>{
-
-let id=item.id;
-
-let membro=[
-
-item[0]||'',
-item[1]||'',
-item[2]||'',
-item[3]||'',
-item[4]||'Pendente',
-item[5]||'—',
-Number(item[6]||0)
-
-];
-
-membroIds.push(id);
-
-dados.membros.push(membro);
-
-});
-
-renderTudo();
-
-return true;
-
-}catch(e){
-
-console.error(e);
-
-return false;
-
-}
-
-}
-
-/* ==========================
-   SALVAR DADOS LOCAIS
-========================== */
-
-function salvarDados(){
-
-/*
-  Os membros agora ficam no servidor.
-  Aqui salvamos somente as configurações
-  que continuam locais.
-*/
-
-const copia={
-...dados,
-membros:[]
-};
-
-localStorage.setItem(
-'escocia_dados',
-JSON.stringify(copia)
-);
-
-}
 
 /* ==========================
    SEMANAS
@@ -1537,7 +1449,7 @@ let configuracaoSemanas;
 
 try{
 
-configuracaoSemanas=
+configuracaoSemanas =
 JSON.parse(
 localStorage.getItem('escocia_semanas')
 );
@@ -1593,18 +1505,273 @@ fim:'03/10/2026'
 
 };
 
-salvarSemanas();
-
 }
 
-function salvarSemanas(){
 
-localStorage.setItem(
-'escocia_semanas',
-JSON.stringify(configuracaoSemanas)
+/* ==========================
+   SALVAR CONFIGURAÇÕES
+   NO POSTGRESQL
+========================== */
+
+async function salvarDados(){
+
+try{
+
+const config={
+
+titulo:dados.titulo,
+
+mensagem:dados.mensagem,
+
+subtitulo:dados.subtitulo,
+
+regras:dados.regras,
+
+sobre:dados.sobre,
+
+semanas:configuracaoSemanas
+
+};
+
+const resposta=await fetch(
+'/api/config',
+{
+method:'PUT',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify(config)
+
+}
 );
 
+const resultado=await resposta.json();
+
+if(
+!resposta.ok ||
+!resultado.ok
+){
+
+console.error(
+resultado.error ||
+'Erro ao salvar configurações.'
+);
+
+return false;
+
 }
+
+return true;
+
+}catch(e){
+
+console.error(
+'Erro ao salvar configurações:',
+e
+);
+
+return false;
+
+}
+
+}
+
+
+/* ==========================
+   SALVAR SEMANAS
+========================== */
+
+async function salvarSemanas(){
+
+return await salvarDados();
+
+}
+
+
+/* ==========================
+   CARREGAR CONFIGURAÇÕES
+   DO POSTGRESQL
+========================== */
+
+async function carregarConfiguracoesServidor(){
+
+try{
+
+const resposta=
+await fetch('/api/config');
+
+if(!resposta.ok){
+
+console.error(
+'Não foi possível carregar as configurações.'
+);
+
+return false;
+
+}
+
+const resultado=
+await resposta.json();
+
+if(!resultado.ok){
+
+return false;
+
+}
+
+
+/*
+   Se já existe configuração
+   no PostgreSQL, usa ela.
+*/
+
+if(resultado.config){
+
+const config=
+resultado.config;
+
+dados.titulo=
+config.titulo ||
+dados.titulo;
+
+dados.mensagem=
+config.mensagem ||
+dados.mensagem;
+
+dados.subtitulo=
+config.subtitulo ||
+dados.subtitulo;
+
+dados.regras=
+config.regras ||
+dados.regras;
+
+dados.sobre=
+config.sobre ||
+dados.sobre;
+
+if(config.semanas){
+
+configuracaoSemanas=
+config.semanas;
+
+}
+
+renderTudo();
+
+console.log(
+'Configurações carregadas do PostgreSQL.'
+);
+
+return true;
+
+}
+
+
+/*
+   Se ainda não existe configuração
+   no banco, envia a configuração
+   atual para o PostgreSQL.
+*/
+
+await salvarDados();
+
+console.log(
+'Configurações iniciais enviadas para o PostgreSQL.'
+);
+
+return true;
+
+}catch(e){
+
+console.error(
+'Erro ao carregar configurações:',
+e
+);
+
+return false;
+
+}
+
+}
+
+
+/* ==========================
+   CARREGAR MEMBROS
+   DO SERVIDOR
+========================== */
+
+async function carregarMembrosServidor(){
+
+try{
+
+const resposta=
+await fetch('/api/membros');
+
+if(!resposta.ok){
+
+console.log(
+'Não foi possível carregar membros.'
+);
+
+return false;
+
+}
+
+const resultado=
+await resposta.json();
+
+if(
+!resultado.ok ||
+!Array.isArray(resultado.membros)
+){
+
+return false;
+
+}
+
+membroIds=[];
+
+dados.membros=[];
+
+resultado.membros.forEach(item=>{
+
+let id=item.id;
+
+let membro=[
+
+item[0]||'',
+item[1]||'',
+item[2]||'',
+item[3]||'',
+item[4]||'Pendente',
+item[5]||'—',
+Number(item[6]||0)
+
+];
+
+membroIds.push(id);
+
+dados.membros.push(membro);
+
+});
+
+renderTudo();
+
+return true;
+
+}catch(e){
+
+console.error(e);
+
+return false;
+
+}
+
+}
+
 
 /* ==========================
    PÁGINAS
@@ -1628,11 +1795,14 @@ document
 b.classList.remove('active')
 );
 
+if(botao){
 botao.classList.add('active');
+}
 
 renderTudo();
 
 }
+
 
 /* ==========================
    RENDER GERAL
@@ -1667,13 +1837,15 @@ dados.subtitulo;
 
 }
 
+
 /* ==========================
    TABELA
 ========================== */
 
 function render(){
 
-let campo=document.getElementById('q');
+let campo=
+document.getElementById('q');
 
 let busca=
 campo
@@ -1685,7 +1857,10 @@ dados.membros
 .map((m,i)=>({m,i}))
 .filter(x=>
 
-(filtro==='Todos' || x.m[4]===filtro)
+(
+filtro==='Todos' ||
+x.m[4]===filtro
+)
 
 &&
 
@@ -1770,7 +1945,8 @@ dados.membros.filter(
 m=>m[4]==='Não entregou'
 ).length;
 
-let total=dados.membros.length;
+let total=
+dados.membros.length;
 
 let porcentagem=
 total
@@ -1779,14 +1955,26 @@ Math.round(entregou/total*100)
 :
 0;
 
-document.getElementById('total').textContent=total;
-document.getElementById('ent').textContent=entregou;
-document.getElementById('pen').textContent=pendente;
-document.getElementById('nao').textContent=nao;
+document.getElementById('total').textContent=
+total;
 
-document.getElementById('re').textContent=entregou;
-document.getElementById('rp').textContent=pendente;
-document.getElementById('rn').textContent=nao;
+document.getElementById('ent').textContent=
+entregou;
+
+document.getElementById('pen').textContent=
+pendente;
+
+document.getElementById('nao').textContent=
+nao;
+
+document.getElementById('re').textContent=
+entregou;
+
+document.getElementById('rp').textContent=
+pendente;
+
+document.getElementById('rn').textContent=
+nao;
 
 document.getElementById('porcentagem').textContent=
 porcentagem+'%';
@@ -1801,6 +1989,7 @@ document.querySelector('.progress').style.background=
 )`;
 
 document.getElementById('updates').innerHTML=
+
 dados.membros
 .slice()
 .reverse()
@@ -1829,6 +2018,7 @@ ${m[0]} ${m[4].toLowerCase()} a meta
 
 }
 
+
 /* ==========================
    FILTROS
 ========================== */
@@ -1849,13 +2039,15 @@ render();
 
 }
 
+
 /* ==========================
    SEMANAS
 ========================== */
 
 function renderSemanas(){
 
-let lista=configuracaoSemanas.semanas;
+let lista=
+configuracaoSemanas.semanas;
 
 document.getElementById('weeks').innerHTML=
 
@@ -1868,7 +2060,6 @@ let encerrada=
 i<configuracaoSemanas.semanaAtual;
 
 let classe=
-
 atual
 ?'active current'
 :encerrada
@@ -1876,7 +2067,6 @@ atual
 :'';
 
 let status=
-
 atual
 ?'🟢 ATUAL'
 :encerrada
@@ -1884,7 +2074,6 @@ atual
 :'⏳ PRÓXIMA';
 
 let cor=
-
 atual
 ?'#18d57a'
 :encerrada
@@ -1901,7 +2090,9 @@ onclick="selecionarSemana(${i})">
 
 <b>${s.nome}</b>
 
-<small>${s.inicio} - ${s.fim}</small>
+<small>
+${s.inicio} - ${s.fim}
+</small>
 
 <small
 class="weekStatus"
@@ -1921,9 +2112,11 @@ atualizarTituloSemana();
 
 }
 
+
 function selecionarSemana(i){
 
-let semanas=document.querySelectorAll('.week');
+let semanas=
+document.querySelectorAll('.week');
 
 semanas.forEach(
 w=>w.classList.remove('active')
@@ -1943,6 +2136,7 @@ document.getElementById('tableTitle').textContent=
 
 }
 
+
 function atualizarTituloSemana(){
 
 let semana=
@@ -1958,9 +2152,11 @@ document.getElementById('tableTitle').textContent=
 
 }
 
+
 function converterData(data){
 
-let partes=data.split('/');
+let partes=
+data.split('/');
 
 return new Date(
 Number(partes[2]),
@@ -1970,31 +2166,45 @@ Number(partes[0])
 
 }
 
+
 /* ==========================
    NOVA SEMANA
 ========================== */
 
 function novaSemana(){
 
-let lista=configuracaoSemanas.semanas;
+let lista=
+configuracaoSemanas.semanas;
 
-let ultima=lista[lista.length-1];
+let ultima=
+lista[lista.length-1];
 
-let fim=converterData(ultima.fim);
+let fim=
+converterData(ultima.fim);
 
-let inicio=new Date(fim);
+let inicio=
+new Date(fim);
 
-inicio.setDate(inicio.getDate()+1);
+inicio.setDate(
+inicio.getDate()+1
+);
 
-let final=new Date(inicio);
+let final=
+new Date(inicio);
 
-final.setDate(final.getDate()+6);
+final.setDate(
+final.getDate()+6
+);
 
 function formatar(data){
 
-return String(data.getDate()).padStart(2,'0')+
+return String(
+data.getDate()
+).padStart(2,'0')+
 '/'+
-String(data.getMonth()+1).padStart(2,'0')+
+String(
+data.getMonth()+1
+).padStart(2,'0')+
 '/'+
 data.getFullYear();
 
@@ -2006,11 +2216,14 @@ id:Date.now(),
 
 nome:
 'Semana '+
-String(lista.length+1).padStart(2,'0'),
+String(lista.length+1)
+.padStart(2,'0'),
 
-inicio:formatar(inicio),
+inicio:
+formatar(inicio),
 
-fim:formatar(final)
+fim:
+formatar(final)
 
 };
 
@@ -2023,6 +2236,7 @@ renderSemanas();
 abrirGerenciadorSemanas();
 
 }
+
 
 /* ==========================
    EDITAR SEMANA
@@ -2037,7 +2251,10 @@ configuracaoSemanas.semanas
 if(!semana)return;
 
 let nome=
-prompt('Nome da semana:',semana.nome);
+prompt(
+'Nome da semana:',
+semana.nome
+);
 
 if(nome===null)return;
 
@@ -2058,7 +2275,9 @@ semana.fim
 if(fim===null)return;
 
 semana.nome=nome;
+
 semana.inicio=inicio;
+
 semana.fim=fim;
 
 salvarSemanas();
@@ -2068,6 +2287,7 @@ renderSemanas();
 abrirGerenciadorSemanas();
 
 }
+
 
 /* ==========================
    ATIVAR SEMANA
@@ -2081,7 +2301,8 @@ configuracaoSemanas.semanas
 
 if(indice===-1)return;
 
-configuracaoSemanas.semanaAtual=indice;
+configuracaoSemanas.semanaAtual=
+indice;
 
 salvarSemanas();
 
@@ -2095,13 +2316,16 @@ configuracaoSemanas.semanas[indice].nome+
 
 }
 
+
 /* ==========================
    EXCLUIR SEMANA
 ========================== */
 
 function excluirSemana(id){
 
-if(configuracaoSemanas.semanas.length<=1){
+if(
+configuracaoSemanas.semanas.length<=1
+){
 
 alert(
 'Você precisa manter pelo menos uma semana.'
@@ -2121,7 +2345,10 @@ let indice=
 configuracaoSemanas.semanas
 .findIndex(s=>s.id===id);
 
-configuracaoSemanas.semanas.splice(indice,1);
+if(indice===-1)return;
+
+configuracaoSemanas.semanas
+.splice(indice,1);
 
 if(
 configuracaoSemanas.semanaAtual>=
@@ -2141,6 +2368,7 @@ abrirGerenciadorSemanas();
 
 }
 
+
 /* ==========================
    AUTOMÁTICO
 ========================== */
@@ -2152,7 +2380,9 @@ configuracaoSemanas.automatico=
 
 salvarSemanas();
 
-if(configuracaoSemanas.automatico){
+if(
+configuracaoSemanas.automatico
+){
 
 verificarSemanaAutomatica();
 
@@ -2162,37 +2392,57 @@ abrirGerenciadorSemanas();
 
 }
 
-function verificarSemanaAutomatica(){
 
-if(!configuracaoSemanas.automatico)return;
+async function verificarSemanaAutomatica(){
 
-let hoje=new Date();
+if(
+!configuracaoSemanas.automatico
+)return;
+
+let hoje=
+new Date();
+
+let semanaAnterior=
+configuracaoSemanas.semanaAtual;
 
 configuracaoSemanas.semanas.forEach(
 (semana,index)=>{
 
-let inicio=converterData(semana.inicio);
+let inicio=
+converterData(semana.inicio);
 
-let fim=converterData(semana.fim);
+let fim=
+converterData(semana.fim);
 
-fim.setHours(23,59,59);
+fim.setHours(
+23,59,59
+);
 
 if(
 hoje>=inicio &&
 hoje<=fim
 ){
 
-configuracaoSemanas.semanaAtual=index;
+configuracaoSemanas.semanaAtual=
+index;
 
 }
 
 });
 
-salvarSemanas();
+if(
+semanaAnterior !==
+configuracaoSemanas.semanaAtual
+){
+
+await salvarSemanas();
+
+}
 
 renderSemanas();
 
 }
+
 
 /* ==========================
    GERENCIAR SEMANAS
@@ -2205,10 +2455,13 @@ document.getElementById('modalSemanas');
 
 if(antigo)antigo.remove();
 
-let modal=document.createElement('div');
+let modal=
+document.createElement('div');
 
 modal.id='modalSemanas';
+
 modal.className='modal';
+
 modal.style.display='flex';
 
 modal.innerHTML=`
@@ -2218,8 +2471,10 @@ modal.innerHTML=`
 <h2>⚙ Gerenciar Semanas</h2>
 
 <p style="color:#9db5d4">
+
 Configure suas semanas manualmente
 ou deixe o sistema trocar sozinho.
+
 </p>
 
 <div class="autoBox">
@@ -2260,7 +2515,12 @@ configuracaoSemanas.automatico
 
 </div>
 
-<div style="display:flex;gap:8px;margin-bottom:15px">
+<div
+style="
+display:flex;
+gap:8px;
+margin-bottom:15px
+">
 
 <button
 class="btn primary"
@@ -2275,7 +2535,8 @@ onclick="novaSemana()">
 <div class="weekManager">
 
 ${
-configuracaoSemanas.semanas.map((s,i)=>{
+configuracaoSemanas.semanas
+.map((s,i)=>{
 
 let atual=
 i===configuracaoSemanas.semanaAtual;
@@ -2285,7 +2546,10 @@ i<configuracaoSemanas.semanaAtual;
 
 return `
 
-<div class="weekManagerItem ${atual?'current':''}">
+<div
+class="weekManagerItem ${
+atual?'current':''
+}">
 
 <div class="weekManagerInfo">
 
@@ -2295,7 +2559,8 @@ return `
 📅 ${s.inicio} → ${s.fim}
 </small>
 
-<small style="
+<small
+style="
 color:${
 atual
 ?'#18d57a'
@@ -2326,7 +2591,9 @@ ${
 <button
 class="act"
 onclick="definirSemanaAtual(${s.id})">
+
 🟢 Ativar
+
 </button>
 `
 :''
@@ -2335,13 +2602,17 @@ onclick="definirSemanaAtual(${s.id})">
 <button
 class="act"
 onclick="editarSemana(${s.id})">
+
 ✏️ Editar
+
 </button>
 
 <button
 class="act"
 onclick="excluirSemana(${s.id})">
+
 🗑️
+
 </button>
 
 </div>
@@ -2375,8 +2646,9 @@ document.body.appendChild(modal);
 
 }
 
+
 /* ==========================
-   MEMBROS - SERVIDOR
+   MEMBROS
 ========================== */
 
 function abrirMembro(index=-1){
@@ -2399,32 +2671,51 @@ index===-1
 :
 'Editar membro';
 
-document.getElementById('mNome').value=m[0];
-document.getElementById('mRG').value=m[1];
-document.getElementById('mCargo').value=m[2];
-document.getElementById('mDiscord').value=m[3];
-document.getElementById('mStatus').value=m[4];
-document.getElementById('mEntrega').value=m[5];
+document.getElementById('mNome').value=
+m[0];
 
-document.getElementById('modalMembro').style.display='flex';
+document.getElementById('mRG').value=
+m[1];
+
+document.getElementById('mCargo').value=
+m[2];
+
+document.getElementById('mDiscord').value=
+m[3];
+
+document.getElementById('mStatus').value=
+m[4];
+
+document.getElementById('mEntrega').value=
+m[5];
+
+document.getElementById('modalMembro')
+.style.display='flex';
 
 }
+
 
 async function salvarMembro(){
 
 let novo=[
 
-document.getElementById('mNome').value.trim(),
+document.getElementById('mNome')
+.value.trim(),
 
-document.getElementById('mRG').value.trim(),
+document.getElementById('mRG')
+.value.trim(),
 
-document.getElementById('mCargo').value.trim(),
+document.getElementById('mCargo')
+.value.trim(),
 
-document.getElementById('mDiscord').value.trim(),
+document.getElementById('mDiscord')
+.value.trim(),
 
-document.getElementById('mStatus').value,
+document.getElementById('mStatus')
+.value,
 
-document.getElementById('mEntrega').value.trim()||'—',
+document.getElementById('mEntrega')
+.value.trim()||'—',
 
 0
 
@@ -2432,7 +2723,9 @@ document.getElementById('mEntrega').value.trim()||'—',
 
 if(!novo[0]){
 
-alert('Digite o nome do membro.');
+alert(
+'Digite o nome do membro.'
+);
 
 return;
 
@@ -2444,43 +2737,59 @@ let resposta;
 
 if(membroEditando===-1){
 
-resposta=await fetch(
+resposta=
+await fetch(
 '/api/membros',
 {
 method:'POST',
+
 headers:{
 'Content-Type':'application/json'
 },
-body:JSON.stringify(novo)
+
+body:
+JSON.stringify(novo)
+
 }
 );
 
 }else{
 
 novo[6]=
-dados.membros[membroEditando][6]||0;
+dados
+.membros[membroEditando][6]||0;
 
-let id=membroIds[membroEditando];
+let id=
+membroIds[membroEditando];
 
-resposta=await fetch(
+resposta=
+await fetch(
 '/api/membros/'+id,
 {
 method:'PUT',
+
 headers:{
 'Content-Type':'application/json'
 },
-body:JSON.stringify(novo)
+
+body:
+JSON.stringify(novo)
+
 }
 );
 
 }
 
-let resultado=await resposta.json();
+let resultado=
+await resposta.json();
 
-if(!resposta.ok || !resultado.ok){
+if(
+!resposta.ok ||
+!resultado.ok
+){
 
 alert(
-resultado.error||
+resultado.error ||
 'Não foi possível salvar o membro.'
 );
 
@@ -2492,7 +2801,8 @@ dados.membros=[];
 
 membroIds=[];
 
-resultado.membros.forEach(item=>{
+resultado.membros
+.forEach(item=>{
 
 membroIds.push(item.id);
 
@@ -2526,6 +2836,7 @@ alert(
 
 }
 
+
 async function excluirMembro(index){
 
 if(!dados.membros[index])return;
@@ -2537,11 +2848,14 @@ dados.membros[index][0]+'?'
 )
 )return;
 
-let id=membroIds[index];
+let id=
+membroIds[index];
 
 if(!id){
 
-alert('ID do membro não encontrado.');
+alert(
+'ID do membro não encontrado.'
+);
 
 return;
 
@@ -2549,19 +2863,24 @@ return;
 
 try{
 
-let resposta=await fetch(
+let resposta=
+await fetch(
 '/api/membros/'+id,
 {
 method:'DELETE'
 }
 );
 
-let resultado=await resposta.json();
+let resultado=
+await resposta.json();
 
-if(!resposta.ok || !resultado.ok){
+if(
+!resposta.ok ||
+!resultado.ok
+){
 
 alert(
-resultado.error||
+resultado.error ||
 'Não foi possível excluir.'
 );
 
@@ -2570,9 +2889,11 @@ return;
 }
 
 dados.membros=[];
+
 membroIds=[];
 
-resultado.membros.forEach(item=>{
+resultado.membros
+.forEach(item=>{
 
 membroIds.push(item.id);
 
@@ -2604,13 +2925,15 @@ alert(
 
 }
 
+
 /* ==========================
    LISTA DE MEMBROS
 ========================== */
 
 function renderMembros(){
 
-document.getElementById('membrosLista').innerHTML=
+document.getElementById('membrosLista')
+.innerHTML=
 
 dados.membros
 .map((m,i)=>`
@@ -2672,6 +2995,7 @@ Excluir
 
 }
 
+
 /* ==========================
    RANKING
 ========================== */
@@ -2687,7 +3011,8 @@ Number(b[6]||0)-
 Number(a[6]||0)
 );
 
-document.getElementById('rankingLista').innerHTML=
+document.getElementById('rankingLista')
+.innerHTML=
 
 ranking
 .map((m,i)=>`
@@ -2721,9 +3046,11 @@ ${m[6]||0} pts
 
 }
 
+
 function abrirRanking(){
 
-document.getElementById('rankingEdicao').innerHTML=
+document.getElementById('rankingEdicao')
+.innerHTML=
 
 dados.membros
 .map((m,i)=>`
@@ -2752,24 +3079,34 @@ border-radius:6px;
 `)
 .join('');
 
-document.getElementById('modalRanking').style.display='flex';
+document.getElementById('modalRanking')
+.style.display='flex';
 
 }
+
 
 async function salvarRanking(){
 
 try{
 
-for(let i=0;i<dados.membros.length;i++){
+for(
+let i=0;
+i<dados.membros.length;
+i++
+){
 
-let m=dados.membros[i];
+let m=
+dados.membros[i];
 
 m[6]=
 Number(
-document.getElementById('pontos'+i).value
+document.getElementById(
+'pontos'+i
+).value
 )||0;
 
-let id=membroIds[i];
+let id=
+membroIds[i];
 
 if(id){
 
@@ -2777,10 +3114,14 @@ await fetch(
 '/api/membros/'+id,
 {
 method:'PUT',
+
 headers:{
 'Content-Type':'application/json'
 },
-body:JSON.stringify(m)
+
+body:
+JSON.stringify(m)
+
 }
 );
 
@@ -2806,13 +3147,15 @@ alert(
 
 }
 
+
 /* ==========================
    HISTÓRICO
 ========================== */
 
 function renderHistorico(){
 
-document.getElementById('historicoLista').innerHTML=
+document.getElementById('historicoLista')
+.innerHTML=
 
 dados.membros
 .slice()
@@ -2852,13 +3195,16 @@ ${m[4]}
 
 }
 
+
 function adicionarHistorico(){
 
-let nome=prompt('Nome do membro:');
+let nome=
+prompt('Nome do membro:');
 
 if(!nome)return;
 
-let texto=prompt('Escreva o registro:');
+let texto=
+prompt('Escreva o registro:');
 
 if(!texto)return;
 
@@ -2868,25 +3214,31 @@ alert(
 
 }
 
+
 /* ==========================
    REGRAS
 ========================== */
 
 function editarRegras(){
 
-document.getElementById('campoRegras').value=
+document.getElementById('campoRegras')
+.value=
 dados.regras;
 
-document.getElementById('modalRegras').style.display='flex';
+document.getElementById('modalRegras')
+.style.display='flex';
 
 }
 
-function salvarRegras(){
+
+async function salvarRegras(){
 
 dados.regras=
-document.getElementById('campoRegras').value;
+document.getElementById(
+'campoRegras'
+).value;
 
-salvarDados();
+await salvarDados();
 
 fecharModal('modalRegras');
 
@@ -2894,31 +3246,38 @@ renderTudo();
 
 }
 
+
 /* ==========================
    SOBRE
 ========================== */
 
 function editarSobre(){
 
-document.getElementById('campoSobre').value=
+document.getElementById('campoSobre')
+.value=
 dados.sobre;
 
-document.getElementById('modalSobre').style.display='flex';
+document.getElementById('modalSobre')
+.style.display='flex';
 
 }
 
-function salvarSobre(){
+
+async function salvarSobre(){
 
 dados.sobre=
-document.getElementById('campoSobre').value;
+document.getElementById(
+'campoSobre'
+).value;
 
-salvarDados();
+await salvarDados();
 
 fecharModal('modalSobre');
 
 renderTudo();
 
 }
+
 
 /* ==========================
    FECHAR MODAL
@@ -2934,12 +3293,15 @@ if(elemento){
 elemento.style.display='none';
 
 if(id==='modalSemanas'){
+
 elemento.remove();
-}
 
 }
 
 }
+
+}
+
 
 /* ==========================
    LOGIN
@@ -2971,7 +3333,8 @@ headers:{
 'Content-Type':'application/json'
 },
 
-body:JSON.stringify({
+body:
+JSON.stringify({
 
 username:usuario,
 
@@ -3009,7 +3372,18 @@ document
 .textContent=
 resultado.user.name[0];
 
-/* CARREGA OS MEMBROS DO SERVIDOR */
+
+/*
+   PRIMEIRO CARREGA AS CONFIGURAÇÕES
+   DO POSTGRESQL
+*/
+
+await carregarConfiguracoesServidor();
+
+
+/*
+   DEPOIS CARREGA OS MEMBROS
+*/
 
 await carregarMembrosServidor();
 
@@ -3018,7 +3392,7 @@ await carregarMembrosServidor();
 document
 .getElementById('err')
 .textContent=
-resultado.error||
+resultado.error ||
 'Usuário ou senha incorretos.';
 
 }
@@ -3036,6 +3410,7 @@ document
 
 }
 
+
 /* ==========================
    INICIAR
 ========================== */
@@ -3048,6 +3423,7 @@ setInterval(
 verificarSemanaAutomatica,
 60000
 );
+
 
 </script>
 </body>
