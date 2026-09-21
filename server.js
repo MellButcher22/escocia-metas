@@ -24,7 +24,6 @@ const pool = process.env.DATABASE_URL
     })
   : null;
 
-
 // =====================================
 // EXPRESS
 // =====================================
@@ -45,7 +44,6 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 7
   }
 }));
-
 
 // =====================================
 // USUÁRIOS
@@ -101,7 +99,6 @@ function publicUser(user) {
   };
 }
 
-
 // =====================================
 // LOGIN
 // =====================================
@@ -154,9 +151,8 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-
 // =====================================
-// MEMBROS - BANCO DE DADOS
+// MEMBROS - ARQUIVO LOCAL
 // =====================================
 
 function ensureMembersFile() {
@@ -183,8 +179,10 @@ function readMembersFile() {
   );
 }
 
+// =====================================
+// TABELA DE MEMBROS
+// =====================================
 
-// Cria a tabela no PostgreSQL
 async function ensureMembersTable() {
   if (!pool) {
     console.log(
@@ -200,14 +198,12 @@ async function ensureMembersTable() {
     )
   `);
 
-  // Verifica se o banco está vazio
   const result = await pool.query(
     "SELECT COUNT(*)::int AS total FROM membros"
   );
 
   const total = result.rows[0].total;
 
-  // Se estiver vazio, importa os membros existentes do JSON
   if (total === 0) {
     const membros = readMembersFile();
 
@@ -233,8 +229,10 @@ async function ensureMembersTable() {
   console.log("PostgreSQL conectado com sucesso.");
 }
 
+// =====================================
+// LER MEMBROS
+// =====================================
 
-// Ler membros
 async function readMembers() {
   if (!pool) {
     return readMembersFile();
@@ -249,6 +247,120 @@ async function readMembers() {
   );
 }
 
+// =====================================
+// CONFIGURAÇÕES DO PAINEL
+// =====================================
+
+async function ensureConfigTable() {
+  if (!pool) {
+    console.log(
+      "DATABASE_URL não configurada para configurações."
+    );
+    return;
+  }
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS configuracoes (
+      id INTEGER PRIMARY KEY,
+      data JSONB NOT NULL
+    )
+  `);
+
+  console.log("Tabela de configurações pronta.");
+}
+
+// =====================================
+// LER CONFIGURAÇÕES
+// =====================================
+
+app.get("/api/config", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        ok: false,
+        error: "Não autenticado."
+      });
+    }
+
+    if (!pool) {
+      return res.json({
+        ok: true,
+        config: null
+      });
+    }
+
+    const result = await pool.query(
+      "SELECT data FROM configuracoes WHERE id = 1"
+    );
+
+    if (result.rows.length === 0) {
+      return res.json({
+        ok: true,
+        config: null
+      });
+    }
+
+    res.json({
+      ok: true,
+      config: result.rows[0].data
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      ok: false,
+      error: "Erro ao carregar configurações."
+    });
+  }
+});
+
+// =====================================
+// SALVAR CONFIGURAÇÕES
+// =====================================
+
+app.put("/api/config", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        ok: false,
+        error: "Não autenticado."
+      });
+    }
+
+    if (!pool) {
+      return res.status(503).json({
+        ok: false,
+        error: "Banco de dados não configurado."
+      });
+    }
+
+    const config = req.body;
+
+    await pool.query(
+      `
+      INSERT INTO configuracoes (id, data)
+      VALUES (1, $1)
+      ON CONFLICT (id)
+      DO UPDATE SET data = EXCLUDED.data
+      `,
+      [config]
+    );
+
+    res.json({
+      ok: true,
+      config
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      ok: false,
+      error: "Erro ao salvar configurações."
+    });
+  }
+});
 
 // =====================================
 // VER MEMBROS
@@ -279,7 +391,6 @@ app.get("/api/membros", async (req, res) => {
     });
   }
 });
-
 
 // =====================================
 // ADICIONAR MEMBRO
@@ -345,7 +456,6 @@ app.post("/api/membros", async (req, res) => {
     });
   }
 });
-
 
 // =====================================
 // EDITAR MEMBRO
@@ -445,7 +555,6 @@ app.put("/api/membros/:id", async (req, res) => {
   }
 });
 
-
 // =====================================
 // EXCLUIR MEMBRO
 // =====================================
@@ -518,7 +627,6 @@ app.delete("/api/membros/:id", async (req, res) => {
   }
 });
 
-
 // =====================================
 // USUÁRIO LOGADO
 // =====================================
@@ -537,7 +645,6 @@ app.get("/api/me", (req, res) => {
   });
 });
 
-
 // =====================================
 // LOGOUT
 // =====================================
@@ -549,7 +656,6 @@ app.post("/api/logout", (req, res) => {
     });
   });
 });
-
 
 // =====================================
 // ÁREA ADMINISTRATIVA
@@ -576,7 +682,6 @@ app.get("/api/admin-only", (req, res) => {
   });
 });
 
-
 // =====================================
 // SITE
 // =====================================
@@ -597,7 +702,6 @@ app.get("*splat", (req, res) => {
   );
 });
 
-
 // =====================================
 // INICIAR SERVIDOR
 // =====================================
@@ -607,6 +711,8 @@ async function startServer() {
     ensureData();
 
     await ensureMembersTable();
+
+    await ensureConfigTable();
 
     app.listen(PORT, () => {
       console.log(
