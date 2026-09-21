@@ -1,10 +1,10 @@
 [
   {
     "id": 1,
-    "username": "gabi",
+    "username": "Admin",
     "name": "Gabi",
     "role": "Administrador",
-    "passwordHash": "$2a$10$W2JIkviX4GXevpexmPaES.bqRmgiYqzvgfDEN4JXId1UZlXDjXS9S"
+    "passwordHash": "$2a$10$n9dQP00x5.PxO5syuS4CiOyvsW73yncNfusx7VdlyyoWWwQFmgPoq"
   },
   {
     "id": 2,
