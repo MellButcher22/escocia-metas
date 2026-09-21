@@ -1,0 +1,2952 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escócia • Painel</title>
+
+<style>
+:root{
+--bg:#020817;
+--panel:#071a32;
+--line:#12529a;
+--blue:#087cff;
+--text:#f5f8ff;
+--muted:#9db5d4;
+--g:#18d57a;
+--y:#ffc52e;
+--r:#ff3d59
+}
+
+*{box-sizing:border-box}
+
+body{
+margin:0;background:#020817 url('meta_escocia.png') center top/cover fixed no-repeat;
+color:var(--text);
+font:14px Arial,sans-serif
+}
+
+.bg-overlay{
+position:fixed;
+inset:0;
+z-index:-1;
+background:rgba(0,5,15,.65)
+}
+
+.app{
+min-height:100vh;
+display:grid;
+grid-template-columns:220px 1fr 280px;
+gap:14px;
+padding:14px
+}
+
+.panel,.hero,.card,.week,.tablebox{
+background:linear-gradient(145deg,rgba(8,29,56,.88),rgba(3,16,36,.92));
+border:1px solid var(--line);
+border-radius:13px;
+box-shadow:0 0 20px #006eff1a
+}
+
+.side{
+padding:16px;
+position:sticky;
+top:14px;
+height:calc(100vh - 28px)
+}
+
+.logo{
+display:flex;
+gap:10px;
+align-items:center;
+padding:6px 4px 20px;
+border-bottom:1px solid #15385d
+}
+
+.crest{
+width:50px;
+height:50px;
+border-radius:12px;
+background:linear-gradient(145deg,#fff,#087cff);
+display:grid;
+place-items:center;
+color:#06204a;
+font-size:24px;
+font-weight:900
+}
+
+.brand b{
+font-size:24px;
+font-style:italic
+}
+
+.brand small{
+display:block;
+color:#31b1ff;
+letter-spacing:2px;
+font-size:9px
+}
+
+.nav{
+margin-top:15px
+}
+
+.nav button{
+width:100%;
+border:0;
+background:transparent;
+color:#d9e7fa;
+text-align:left;
+padding:12px;
+border-radius:8px;
+margin:3px 0;
+cursor:pointer
+}
+
+.nav button:hover,
+.nav button.active{
+background:#0874e8
+}
+
+.main{
+min-width:0
+}
+
+.top{
+height:55px;
+display:flex;
+justify-content:flex-end;
+align-items:center
+}
+
+.profile{
+display:flex;
+align-items:center;
+gap:9px;
+padding:8px 12px;
+background:rgba(6,26,52,.86);
+border:1px solid #164b82;
+border-radius:9px
+}
+
+.avatar{
+width:34px;
+height:34px;
+border-radius:50%;
+display:grid;
+place-items:center;
+background:#1b5ba5
+}
+
+.hero{
+padding:22px;
+display:flex;
+justify-content:space-between;
+align-items:center
+}
+
+.hero h1{
+margin:0 0 7px;
+font-size:22px
+}
+
+.hero p{
+margin:0;
+color:#c3d6ec;
+line-height:1.5
+}
+
+.wolf{
+font-size:65px
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+margin:12px 0
+}
+
+.card{
+padding:15px
+}
+
+.stat{
+display:flex;
+align-items:center;
+gap:12px
+}
+
+.ico{
+width:44px;
+height:44px;
+border-radius:50%;
+display:grid;
+place-items:center;
+background:#087cff;
+font-size:21px
+}
+
+.g{background:#07985b}
+.y{background:#aa760f}
+.r{background:#c92340}
+
+.muted{
+color:var(--muted);
+font-size:11px
+}
+
+.num{
+font-size:23px;
+font-weight:bold;
+margin-top:4px
+}
+
+.weeks{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:9px;
+margin-bottom:12px
+}
+
+.week{
+padding:12px;
+text-align:center;
+cursor:pointer;
+transition:.2s
+}
+
+.week:hover{
+transform:translateY(-2px);
+border-color:#36a4ff
+}
+
+.week.active{
+background:linear-gradient(145deg,#087df2,#074ca6);
+border-color:#38a8ff
+}
+
+.week.ended{
+opacity:.75
+}
+
+.week.current{
+box-shadow:0 0 15px #087cff55
+}
+
+.week b,
+.week small{
+display:block
+}
+
+.week small{
+color:#d5e6fc;
+margin-top:4px
+}
+
+.weekStatus{
+font-size:10px!important;
+font-weight:bold;
+margin-top:7px!important
+}
+
+.tablebox{
+padding:13px
+}
+
+.thead{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px
+}
+
+.thead h2{
+font-size:15px;
+color:#5ebdff
+}
+
+.search{
+width:280px;
+padding:9px;
+background:#04162b;
+border:1px solid #1a568d;
+color:white;
+border-radius:7px
+}
+
+.filters{
+display:flex;
+gap:6px;
+flex-wrap:wrap;
+margin-bottom:9px
+}
+
+button{
+cursor:pointer
+}
+
+.filters button,
+.btn{
+background:#082647;
+color:#d6e7fb;
+border:1px solid #1e5b90;
+border-radius:6px;
+padding:8px 11px
+}
+
+.filters .active,
+.primary{
+background:#0877eb
+}
+
+.admin{
+margin-left:auto;
+background:#12a66a!important
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:750px
+}
+
+th{
+background:#06224a;
+color:#b9d2f3;
+font-size:11px;
+padding:10px;
+text-align:left
+}
+
+td{
+padding:9px;
+border-bottom:1px solid #123454;
+font-size:12px
+}
+
+.status{
+padding:5px 8px;
+border-radius:12px;
+font-weight:bold;
+font-size:10px
+}
+
+.ent{background:#07985b}
+.pen{background:#b27b00}
+.no{background:#c8233d}
+
+.act{
+background:#082b55;
+color:white;
+border:1px solid #2766a2;
+border-radius:6px;
+padding:5px 8px;
+margin:2px
+}
+
+.act:hover{
+background:#0b477f
+}
+
+.right{
+padding:14px;
+height:max-content;
+position:sticky;
+top:14px
+}
+
+.right h3{
+font-size:14px;
+border-bottom:1px solid #153c65;
+padding-bottom:10px
+}
+
+.progress{
+width:100px;
+height:100px;
+border-radius:50%;
+margin:16px auto;
+display:grid;
+place-items:center;
+background:conic-gradient(#118aff 0 67%,#0b2949 67%)
+}
+
+.progress span{
+width:74px;
+height:74px;
+border-radius:50%;
+background:#06172c;
+display:grid;
+place-items:center;
+font-weight:bold;
+font-size:18px
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+padding:8px 0;
+border-bottom:1px solid #123451
+}
+
+.dot{
+width:9px;
+height:9px;
+border-radius:50%;
+display:inline-block;
+margin-right:7px
+}
+
+.gd{background:var(--g)}
+.yd{background:var(--y)}
+.rd{background:var(--r)}
+
+.update{
+padding:8px 0;
+border-bottom:1px solid #123451;
+font-size:11px
+}
+
+.update small{
+display:block;
+color:#718eae;
+margin-top:4px
+}
+
+.login{
+position:fixed;
+inset:0;
+background:#000b;
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:999
+}
+
+.loginbox{
+width:min(390px,92vw);
+padding:25px;
+background:#06182f;
+border:1px solid #1765ad;
+border-radius:14px
+}
+
+.loginbox input,
+.modal input,
+.modal select,
+.modal textarea{
+width:100%;
+padding:11px;
+margin:6px 0 12px;
+background:#031226;
+color:white;
+border:1px solid #164c80;
+border-radius:7px
+}
+
+.loginbox button{
+width:100%;
+padding:11px;
+background:#0877ee;
+border:0;
+color:#fff;
+border-radius:7px
+}
+
+.hidden{
+display:none!important
+}
+
+.page{
+display:none
+}
+
+.page.active{
+display:block
+}
+
+.notice{
+padding:15px;
+background:#061a32;
+border:1px solid #164b82;
+border-radius:9px;
+margin-bottom:12px;
+line-height:1.7;
+white-space:pre-wrap
+}
+
+.list{
+display:grid;
+gap:9px
+}
+
+.listItem{
+padding:12px;
+background:#061a32;
+border:1px solid #164b82;
+border-radius:9px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px
+}
+
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.8);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999;
+padding:15px
+}
+
+.modalBox{
+width:min(700px,95vw);
+max-height:90vh;
+overflow:auto;
+padding:22px;
+background:#071a32;
+border:1px solid #1765ad;
+border-radius:14px
+}
+
+.modalBox h2{
+margin-top:0;
+color:#5ebdff
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px
+}
+
+.modalButtons{
+display:flex;
+gap:8px;
+margin-top:10px
+}
+
+.modalButtons button{
+flex:1;
+padding:11px;
+border:0;
+border-radius:7px;
+color:white
+}
+
+.cancel{
+background:#263b55
+}
+
+.save{
+background:#0877eb
+}
+
+textarea{
+min-height:160px;
+resize:vertical
+}
+
+.weekManager{
+display:grid;
+gap:10px
+}
+
+.weekManagerItem{
+padding:14px;
+background:#061a32;
+border:1px solid #164b82;
+border-radius:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px
+}
+
+.weekManagerItem.current{
+border-color:#18d57a;
+box-shadow:0 0 12px #18d57a22
+}
+
+.weekManagerInfo b{
+font-size:15px
+}
+
+.weekManagerInfo small{
+display:block;
+margin-top:5px;
+color:#9db5d4
+}
+
+.weekActions{
+display:flex;
+gap:5px;
+flex-wrap:wrap
+}
+
+.autoBox{
+padding:12px;
+margin-bottom:14px;
+background:#061a32;
+border:1px solid #164b82;
+border-radius:9px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px
+}
+
+.toggleOn{
+background:#07985b!important;
+border-color:#18d57a!important
+}
+
+@media(max-width:1050px){
+.app{
+grid-template-columns:190px 1fr
+}
+
+.right{
+display:none
+}
+
+.stats{
+grid-template-columns:repeat(2,1fr)
+}
+}
+
+@media(max-width:700px){
+.app{
+display:block;
+padding:8px
+}
+
+.side{
+position:static;
+height:auto;
+margin-bottom:9px
+}
+
+.stats,
+.weeks,
+.grid{
+grid-template-columns:1fr
+}
+
+.thead{
+display:block
+}
+
+.search{
+width:100%
+}
+
+.wolf{
+display:none
+}
+
+.weekManagerItem,
+.autoBox{
+display:block
+}
+
+.weekActions{
+margin-top:10px
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg-overlay"></div>
+
+<!-- LOGIN -->
+
+<div id="login" class="login">
+
+<div class="loginbox">
+
+<h2>⚔ Escócia</h2>
+
+<p style="color:#9db5d4">
+Acesso ao painel de metas
+</p>
+
+<label>Usuário</label>
+<input id="user" placeholder="ex.: gabi">
+
+<label>Senha</label>
+<input id="pass" type="password" placeholder="Senha">
+
+<button onclick="login()">Entrar</button>
+
+<p id="err" style="color:#ff7083"></p>
+
+</div>
+
+</div>
+
+<div class="app">
+
+<!-- MENU -->
+
+<aside class="side panel">
+
+<div class="logo">
+
+<div class="crest">⚔</div>
+
+<div class="brand">
+<b>ESCÓCIA</b>
+<small>PAINEL DE METAS</small>
+</div>
+
+</div>
+
+<div class="nav">
+
+<button class="active" onclick="abrirPagina('home',this)">
+⌂ &nbsp; Início
+</button>
+
+<button onclick="abrirPagina('entrega',this)">
+♟ &nbsp; Minha Entrega
+</button>
+
+<button onclick="abrirPagina('ranking',this)">
+🏆 &nbsp; Ranking
+</button>
+
+<button onclick="abrirPagina('historico',this)">
+◷ &nbsp; Histórico
+</button>
+
+<button onclick="abrirPagina('membros',this)">
+♟ &nbsp; Membros
+</button>
+
+<button onclick="abrirPagina('regras',this)">
+▤ &nbsp; Regras
+</button>
+
+<button onclick="abrirPagina('sobre',this)">
+ⓘ &nbsp; Sobre a Escócia
+</button>
+
+<button onclick="abrirGerenciadorSemanas()">
+⚙ &nbsp; Gerenciar Semanas
+</button>
+
+</div>
+</aside>
+
+<main class="main">
+
+<div class="top">
+
+<div class="profile">
+
+<div class="avatar" id="avatar">G</div>
+
+<div>
+<b id="who">Gabi</b>
+
+<small
+style="display:block;color:#7fa0c7"
+id="role">
+Administrador
+</small>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- INÍCIO -->
+
+<div id="home" class="page active">
+
+<section class="hero">
+
+<div>
+
+<h1 id="tituloPagina">
+♛ ENTREGA DE METAS
+</h1>
+
+<p>
+
+<b id="mensagem">
+Seja bem-vindo(a) ao painel de entrega de metas da Escócia!
+</b>
+
+<br>
+
+<span id="subtitulo">
+Acompanhe o desempenho e o status das metas de todos os membros.
+</span>
+
+</p>
+
+</div>
+
+<div class="wolf">
+🐺
+
+<small
+style="display:block;color:#3fb4ff;font-size:11px;letter-spacing:3px;text-align:center">
+
+ESCÓCIA • FAMÍLIA
+
+</small>
+
+</div>
+
+</section>
+
+<section class="stats">
+
+<div class="card">
+
+<div class="stat">
+
+<div class="ico">♟</div>
+
+<div>
+
+<span class="muted">
+Total de Membros
+</span>
+
+<div class="num" id="total">
+0
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="stat">
+
+<div class="ico g">✓</div>
+
+<div>
+
+<span class="muted">
+Metas Entregues
+</span>
+
+<div class="num" id="ent">
+0
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="stat">
+
+<div class="ico y">◷</div>
+
+<div>
+
+<span class="muted">
+Pendentes
+</span>
+
+<div class="num" id="pen">
+0
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="stat">
+
+<div class="ico r">×</div>
+
+<div>
+
+<span class="muted">
+Não Entregou
+</span>
+
+<div class="num" id="nao">
+0
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<section class="weeks" id="weeks"></section>
+
+<section class="tablebox">
+
+<div class="thead">
+
+<h2 id="tableTitle">
+▣ ENTREGA DE METAS
+</h2>
+
+<input
+id="q"
+class="search"
+placeholder="⌕ Buscar..."
+oninput="render()"
+>
+
+</div>
+
+<div class="filters">
+
+<button
+class="active"
+onclick="setF('Todos',this)">
+Todos
+</button>
+
+<button
+onclick="setF('Entregou',this)">
+✓ Entregou
+</button>
+
+<button
+onclick="setF('Pendente',this)">
+◷ Pendente
+</button>
+
+<button
+onclick="setF('Não entregou',this)">
+× Não entregou
+</button>
+
+<button
+class="admin"
+onclick="abrirMembro()">
+＋ Gerenciar membros
+</button>
+
+</div>
+
+<div style="overflow:auto">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+<th>Nome</th>
+<th>RG</th>
+<th>Cargo</th>
+<th>Discord</th>
+<th>Status</th>
+<th>Entrega</th>
+<th>Ações</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tbody"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</div>
+
+<!-- MINHA ENTREGA -->
+
+<div id="entrega" class="page">
+
+<div class="tablebox">
+
+<h2>♟ Minha Entrega</h2>
+
+<div class="notice">
+
+Aqui aparecerão as informações da sua própria meta.
+
+</div>
+
+<div id="minhaEntrega"></div>
+
+</div>
+
+</div>
+
+<!-- RANKING -->
+
+<div id="ranking" class="page">
+
+<div class="tablebox">
+
+<h2>🏆 Ranking da Escócia</h2>
+
+<p style="color:#9db5d4">
+Ranking baseado nas metas entregues.
+</p>
+
+<div id="rankingLista" class="list"></div>
+
+<br>
+
+<button class="btn primary" onclick="abrirRanking()">
+⚙ Editar pontuação
+</button>
+
+</div>
+
+</div>
+
+<!-- HISTÓRICO -->
+
+<div id="historico" class="page">
+
+<div class="tablebox">
+
+<h2>◷ Histórico</h2>
+
+<div id="historicoLista" class="list"></div>
+
+<br>
+
+<button class="btn primary" onclick="adicionarHistorico()">
+＋ Adicionar registro
+</button>
+
+</div>
+
+</div>
+
+<!-- MEMBROS -->
+
+<div id="membros" class="page">
+
+<div class="tablebox">
+
+<div class="thead">
+
+<h2>♟ Membros da Escócia</h2>
+
+<button
+class="btn primary"
+onclick="abrirMembro()">
+＋ Adicionar membro
+</button>
+
+</div>
+
+<br>
+
+<div id="membrosLista" class="list"></div>
+
+</div>
+
+</div>
+
+<!-- REGRAS -->
+
+<div id="regras" class="page">
+
+<div class="tablebox">
+
+<h2>▤ Regras da Escócia</h2>
+
+<div id="regrasTexto" class="notice"></div>
+
+<button
+class="btn primary"
+onclick="editarRegras()">
+✎ Editar regras
+</button>
+
+</div>
+
+</div>
+
+<!-- SOBRE -->
+
+<div id="sobre" class="page">
+
+<div class="tablebox">
+
+<h2>ⓘ Sobre a Escócia</h2>
+
+<div id="sobreTexto" class="notice"></div>
+
+<button
+class="btn primary"
+onclick="editarSobre()">
+✎ Editar informações
+</button>
+
+</div>
+
+</div>
+
+</main>
+
+<!-- LADO DIREITO -->
+
+<aside class="right panel">
+
+<h3>
+▣ Seu Progresso
+</h3>
+
+<div class="progress">
+
+<span id="porcentagem">
+0%
+</span>
+
+</div>
+
+<div style="text-align:center">
+
+Meta da semana
+
+<br>
+
+<b
+style="font-size:18px"
+id="fracao">
+0/0
+</b>
+
+entregues
+
+</div>
+
+<div class="row">
+
+<span>
+<i class="dot gd"></i>
+Entregou
+</span>
+
+<b id="re">
+0
+</b>
+
+</div>
+
+<div class="row">
+
+<span>
+<i class="dot yd"></i>
+Pendente
+</span>
+
+<b id="rp">
+0
+</b>
+
+</div>
+
+<div class="row">
+
+<span>
+<i class="dot rd"></i>
+Não entregou
+</span>
+
+<b id="rn">
+0
+</b>
+
+</div>
+
+<h3>
+♟ Minha Situação
+</h3>
+
+<div style="color:#8cf0bd">
+● Painel funcionando
+</div>
+
+<h3>
+♟ Últimas Atualizações
+</h3>
+
+<div id="updates"></div>
+
+</aside>
+
+</div>
+
+<!-- MODAL MEMBRO -->
+
+<div id="modalMembro" class="modal">
+
+<div class="modalBox">
+
+<h2 id="tituloMembro">
+Adicionar membro
+</h2>
+
+<div class="grid">
+
+<div>
+<label>Nome</label>
+<input id="mNome">
+</div>
+
+<div>
+<label>RG</label>
+<input id="mRG">
+</div>
+
+<div>
+<label>Cargo</label>
+<input id="mCargo">
+</div>
+
+<div>
+<label>Discord</label>
+<input id="mDiscord">
+</div>
+
+<div>
+<label>Status</label>
+
+<select id="mStatus">
+
+<option>Entregou</option>
+<option>Pendente</option>
+<option>Não entregou</option>
+
+</select>
+
+</div>
+
+<div>
+
+<label>Entrega</label>
+
+<input
+id="mEntrega"
+placeholder="Ex.: 21/09 - 20:30">
+
+</div>
+
+</div>
+
+<div class="modalButtons">
+
+<button
+class="save"
+onclick="salvarMembro()">
+Salvar
+</button>
+
+<button
+class="cancel"
+onclick="fecharModal('modalMembro')">
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- MODAL REGRAS -->
+
+<div id="modalRegras" class="modal">
+
+<div class="modalBox">
+
+<h2>
+▤ Editar Regras
+</h2>
+
+<textarea id="campoRegras"></textarea>
+
+<div class="modalButtons">
+
+<button
+class="save"
+onclick="salvarRegras()">
+Salvar
+</button>
+
+<button
+class="cancel"
+onclick="fecharModal('modalRegras')">
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- MODAL SOBRE -->
+
+<div id="modalSobre" class="modal">
+
+<div class="modalBox">
+
+<h2>
+ⓘ Editar Sobre a Escócia
+</h2>
+
+<textarea id="campoSobre"></textarea>
+
+<div class="modalButtons">
+
+<button
+class="save"
+onclick="salvarSobre()">
+Salvar
+</button>
+
+<button
+class="cancel"
+onclick="fecharModal('modalSobre')">
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- MODAL RANKING -->
+
+<div id="modalRanking" class="modal">
+
+<div class="modalBox">
+
+<h2>
+🏆 Editar Ranking
+</h2>
+
+<p style="color:#9db5d4">
+Coloque a pontuação de cada membro.
+</p>
+
+<div id="rankingEdicao"></div>
+
+<div class="modalButtons">
+
+<button
+class="save"
+onclick="salvarRanking()">
+Salvar
+</button>
+
+<button
+class="cancel"
+onclick="fecharModal('modalRanking')">
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const padrao = {
+
+membros:[
+['Mell Felix','894','Gerente','melzinhaa','Entregou','08/09 - 21:34',100],
+['Ster','12345','Cria','sterx','Entregou','09/09 - 18:20',90],
+['Bryan','67890','Cria','bryan#123','Não entregou','—',20],
+['Wendell','54321','Olheiro','wendellz','Entregou','10/09 - 19:02',85],
+['Pedrinn','98765','Cria','pedrinnx','Pendente','—',50],
+['Jotta','11223','Morador','jotta#456','Não entregou','—',15],
+['Yan','33445','Cria','yan.rlk','Entregou','11/09 - 20:47',80],
+['Lock','55667','Olheiro','lockz','Entregou','12/09 - 17:32',75],
+['Alves','77889','Cria','alves#777','Não entregou','—',10],
+['Ruiva','99001','Morador','ruiva','Pendente','—',45]
+],
+
+semanas:[
+['Semana 01','06/09 - 12/09'],
+['Semana 02','13/09 - 19/09'],
+['Semana 03','20/09 - 26/09'],
+['Semana 04','27/09 - 03/10']
+],
+
+titulo:'♛ ENTREGA DE METAS',
+
+mensagem:'Seja bem-vindo(a) ao painel de entrega de metas da Escócia!',
+
+subtitulo:'Acompanhe o desempenho e o status das metas de todos os membros.',
+
+regras:
+`• Respeitar todos os membros.
+• Cumprir as metas dentro do prazo.
+• Seguir as regras da cidade e da organização.
+• Evitar conflitos desnecessários.
+• Respeitar a liderança.
+• Qualquer problema deve ser comunicado à liderança.`,
+
+sobre:
+`A Escócia é uma família dentro do RP.
+
+Aqui você pode colocar a história da organização, informações sobre a liderança, objetivos, setores e qualquer outra informação importante.`
+
+};
+
+let dados;
+
+try{
+
+dados=
+JSON.parse(
+localStorage.getItem('escocia_dados')
+)||padrao;
+
+}catch(e){
+
+dados=padrao;
+
+}
+
+let filtro='Todos';
+
+let membroEditando=-1;
+
+/* ==========================
+   SEMANAS
+========================== */
+
+let configuracaoSemanas;
+
+try{
+
+configuracaoSemanas=
+JSON.parse(
+localStorage.getItem('escocia_semanas')
+);
+
+}catch(e){
+
+configuracaoSemanas=null;
+
+}
+
+if(
+!configuracaoSemanas ||
+!configuracaoSemanas.semanas
+){
+
+configuracaoSemanas={
+
+automatico:false,
+
+/*
+  índice 2 = Semana 03
+  Semana 01 e 02 já encerradas
+*/
+
+semanaAtual:2,
+
+semanas:[
+
+{
+id:1,
+nome:'Semana 01',
+inicio:'06/09/2026',
+fim:'12/09/2026'
+},
+
+{
+id:2,
+nome:'Semana 02',
+inicio:'13/09/2026',
+fim:'19/09/2026'
+},
+
+{
+id:3,
+nome:'Semana 03',
+inicio:'20/09/2026',
+fim:'26/09/2026'
+},
+
+{
+id:4,
+nome:'Semana 04',
+inicio:'27/09/2026',
+fim:'03/10/2026'
+}
+
+]
+
+};
+
+localStorage.setItem(
+'escocia_semanas',
+JSON.stringify(configuracaoSemanas)
+);
+
+}
+
+function salvarDados(){
+
+localStorage.setItem(
+'escocia_dados',
+JSON.stringify(dados)
+);
+
+}
+
+function salvarSemanas(){
+
+localStorage.setItem(
+'escocia_semanas',
+JSON.stringify(configuracaoSemanas)
+);
+
+}
+
+/* ==========================
+   PÁGINAS
+========================== */
+
+function abrirPagina(id,botao){
+
+document
+.querySelectorAll('.page')
+.forEach(p=>
+p.classList.remove('active')
+);
+
+document
+.getElementById(id)
+.classList.add('active');
+
+document
+.querySelectorAll('.nav button')
+.forEach(b=>
+b.classList.remove('active')
+);
+
+botao.classList.add('active');
+
+renderTudo();
+
+}
+
+/* ==========================
+   RENDER GERAL
+========================== */
+
+function renderTudo(){
+
+render();
+
+renderSemanas();
+
+renderMembros();
+
+renderRanking();
+
+renderHistorico();
+
+document.getElementById('regrasTexto').textContent=
+dados.regras;
+
+document.getElementById('sobreTexto').textContent=
+dados.sobre;
+
+document.getElementById('tituloPagina').textContent=
+dados.titulo;
+
+document.getElementById('mensagem').textContent=
+dados.mensagem;
+
+document.getElementById('subtitulo').textContent=
+dados.subtitulo;
+
+}
+
+/* ==========================
+   TABELA
+========================== */
+
+function render(){
+
+let campo=
+document.getElementById('q');
+
+let busca=
+campo
+?campo.value.toLowerCase()
+:'';
+
+let lista=
+dados.membros
+.map((m,i)=>({m,i}))
+.filter(x=>
+
+(filtro==='Todos' || x.m[4]===filtro)
+
+&&
+
+x.m
+.join(' ')
+.toLowerCase()
+.includes(busca)
+
+);
+
+document.getElementById('tbody').innerHTML=
+
+lista.map((x,i)=>{
+
+let m=x.m;
+
+let classe=
+m[4]==='Entregou'
+?'ent'
+:m[4]==='Pendente'
+?'pen'
+:'no';
+
+return `
+
+<tr>
+
+<td>${i+1}</td>
+
+<td>◉ ${m[0]}</td>
+
+<td>${m[1]}</td>
+
+<td>${m[2]}</td>
+
+<td>${m[3]}</td>
+
+<td>
+
+<span class="status ${classe}">
+${m[4]}
+</span>
+
+</td>
+
+<td>${m[5]}</td>
+
+<td>
+
+<button
+class="act"
+onclick="abrirMembro(${x.i})">
+Editar
+</button>
+
+<button
+class="act"
+onclick="excluirMembro(${x.i})">
+Excluir
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+}).join('');
+
+let entregou=
+dados.membros.filter(
+m=>m[4]==='Entregou'
+).length;
+
+let pendente=
+dados.membros.filter(
+m=>m[4]==='Pendente'
+).length;
+
+let nao=
+dados.membros.filter(
+m=>m[4]==='Não entregou'
+).length;
+
+let total=dados.membros.length;
+
+let porcentagem=
+total
+?
+Math.round(entregou/total*100)
+:
+0;
+
+document.getElementById('total').textContent=total;
+document.getElementById('ent').textContent=entregou;
+document.getElementById('pen').textContent=pendente;
+document.getElementById('nao').textContent=nao;
+
+document.getElementById('re').textContent=entregou;
+document.getElementById('rp').textContent=pendente;
+document.getElementById('rn').textContent=nao;
+
+document.getElementById('porcentagem').textContent=
+porcentagem+'%';
+
+document.getElementById('fracao').textContent=
+entregou+'/'+total;
+
+document.querySelector('.progress').style.background=
+`conic-gradient(
+#118aff 0 ${porcentagem}%,
+#0b2949 ${porcentagem}%
+)`;
+
+document.getElementById('updates').innerHTML=
+dados.membros
+.slice()
+.reverse()
+.slice(0,5)
+.map(m=>`
+
+<div class="update">
+
+<span class="dot ${
+m[4]==='Entregou'
+?'gd'
+:m[4]==='Pendente'
+?'yd'
+:'rd'
+}">
+</span>
+
+${m[0]} ${m[4].toLowerCase()} a meta
+
+<small>${m[5]}</small>
+
+</div>
+
+`)
+.join('');
+
+}
+
+/* ==========================
+   FILTROS
+========================== */
+
+function setF(valor,botao){
+
+filtro=valor;
+
+document
+.querySelectorAll('.filters button')
+.forEach(b=>
+b.classList.remove('active')
+);
+
+botao.classList.add('active');
+
+render();
+
+}
+
+/* ==========================
+   RENDER SEMANAS
+========================== */
+
+function renderSemanas(){
+
+let lista=
+configuracaoSemanas.semanas;
+
+document.getElementById('weeks').innerHTML=
+
+lista.map((s,i)=>{
+
+let atual=
+i===configuracaoSemanas.semanaAtual;
+
+let encerrada=
+i<configuracaoSemanas.semanaAtual;
+
+let classe=
+
+atual
+?'active current'
+:encerrada
+?'ended'
+:'';
+
+let status=
+
+atual
+?'🟢 ATUAL'
+:encerrada
+?'🔒 ENCERRADA'
+:'⏳ PRÓXIMA';
+
+let cor=
+
+atual
+?'#18d57a'
+:encerrada
+?'#9db5d4'
+:'#ffc52e';
+
+return `
+
+<div
+class="week ${classe}"
+onclick="selecionarSemana(${i})">
+
+▣
+
+<b>
+${s.nome}
+</b>
+
+<small>
+${s.inicio} - ${s.fim}
+</small>
+
+<small
+class="weekStatus"
+style="color:${cor}">
+
+${status}
+
+</small>
+
+</div>
+
+`;
+
+}).join('');
+
+atualizarTituloSemana();
+
+}
+
+/* ==========================
+   SELECIONAR SEMANA
+========================== */
+
+function selecionarSemana(i){
+
+let semanas=
+document.querySelectorAll('.week');
+
+semanas.forEach(
+w=>w.classList.remove('active')
+);
+
+if(semanas[i]){
+
+semanas[i].classList.add('active');
+
+}
+
+let semana=
+configuracaoSemanas.semanas[i];
+
+if(!semana)return;
+
+document.getElementById('tableTitle').textContent=
+
+'▣ ENTREGA DE METAS - '+
+semana.nome;
+
+}
+
+/* ==========================
+   TITULO DA SEMANA ATUAL
+========================== */
+
+function atualizarTituloSemana(){
+
+let semana=
+configuracaoSemanas
+.semanas[
+configuracaoSemanas.semanaAtual
+];
+
+if(!semana)return;
+
+document.getElementById('tableTitle').textContent=
+
+'▣ ENTREGA DE METAS - '+
+semana.nome;
+
+}
+
+/* ==========================
+   CONVERTER DATA
+========================== */
+
+function converterData(data){
+
+let partes=data.split('/');
+
+return new Date(
+Number(partes[2]),
+Number(partes[1])-1,
+Number(partes[0])
+);
+
+}
+
+/* ==========================
+   NOVA SEMANA
+========================== */
+
+function novaSemana(){
+
+let lista=
+configuracaoSemanas.semanas;
+
+let ultima=
+lista[lista.length-1];
+
+let fim=
+converterData(ultima.fim);
+
+let inicio=
+new Date(fim);
+
+inicio.setDate(
+inicio.getDate()+1
+);
+
+let final=
+new Date(inicio);
+
+final.setDate(
+final.getDate()+6
+);
+
+function formatar(data){
+
+return String(
+data.getDate()
+).padStart(2,'0')
++'/'+
+String(
+data.getMonth()+1
+).padStart(2,'0')
++'/'+
+data.getFullYear();
+
+}
+
+let nova={
+
+id:Date.now(),
+
+nome:
+'Semana '+
+String(lista.length+1)
+.padStart(2,'0'),
+
+inicio:
+formatar(inicio),
+
+fim:
+formatar(final)
+
+};
+
+lista.push(nova);
+
+salvarSemanas();
+
+renderSemanas();
+
+abrirGerenciadorSemanas();
+
+}
+
+/* ==========================
+   EDITAR SEMANA
+========================== */
+
+function editarSemana(id){
+
+let semana=
+configuracaoSemanas
+.semanas
+.find(s=>s.id===id);
+
+if(!semana)return;
+
+let nome=
+prompt(
+'Nome da semana:',
+semana.nome
+);
+
+if(nome===null)return;
+
+let inicio=
+prompt(
+'Data inicial (DD/MM/AAAA):',
+semana.inicio
+);
+
+if(inicio===null)return;
+
+let fim=
+prompt(
+'Data final (DD/MM/AAAA):',
+semana.fim
+);
+
+if(fim===null)return;
+
+semana.nome=nome;
+semana.inicio=inicio;
+semana.fim=fim;
+
+salvarSemanas();
+
+renderSemanas();
+
+abrirGerenciadorSemanas();
+
+}
+
+/* ==========================
+   ATIVAR SEMANA
+========================== */
+
+function definirSemanaAtual(id){
+
+let indice=
+configuracaoSemanas
+.semanas
+.findIndex(s=>s.id===id);
+
+if(indice===-1)return;
+
+configuracaoSemanas.semanaAtual=
+indice;
+
+salvarSemanas();
+
+renderSemanas();
+
+alert(
+'🟢 '+
+configuracaoSemanas
+.semanas[indice]
+.nome+
+' agora é a semana atual!'
+);
+
+}
+
+/* ==========================
+   EXCLUIR SEMANA
+========================== */
+
+function excluirSemana(id){
+
+if(
+configuracaoSemanas.semanas.length<=1
+){
+
+alert(
+'Você precisa manter pelo menos uma semana.'
+);
+
+return;
+
+}
+
+if(
+!confirm(
+'Deseja realmente excluir esta semana?'
+)
+)return;
+
+let indice=
+configuracaoSemanas
+.semanas
+.findIndex(s=>s.id===id);
+
+configuracaoSemanas
+.semanas
+.splice(indice,1);
+
+if(
+configuracaoSemanas.semanaAtual>=
+configuracaoSemanas.semanas.length
+){
+
+configuracaoSemanas.semanaAtual=
+configuracaoSemanas.semanas.length-1;
+
+}
+
+salvarSemanas();
+
+renderSemanas();
+
+abrirGerenciadorSemanas();
+
+}
+
+/* ==========================
+   AUTOMÁTICO
+========================== */
+
+function alternarAutomatico(){
+
+configuracaoSemanas.automatico=
+!configuracaoSemanas.automatico;
+
+salvarSemanas();
+
+if(
+configuracaoSemanas.automatico
+){
+
+verificarSemanaAutomatica();
+
+}
+
+abrirGerenciadorSemanas();
+
+}
+
+function verificarSemanaAutomatica(){
+
+if(
+!configuracaoSemanas.automatico
+)return;
+
+let hoje=
+new Date();
+
+configuracaoSemanas
+.semanas
+.forEach((semana,index)=>{
+
+let inicio=
+converterData(semana.inicio);
+
+let fim=
+converterData(semana.fim);
+
+fim.setHours(
+23,59,59
+);
+
+if(
+hoje>=inicio &&
+hoje<=fim
+){
+
+configuracaoSemanas
+.semanaAtual=index;
+
+}
+
+});
+
+salvarSemanas();
+
+renderSemanas();
+
+}
+
+/* ==========================
+   GERENCIAR SEMANAS
+========================== */
+
+function abrirGerenciadorSemanas(){
+
+let antigo=
+document.getElementById(
+'modalSemanas'
+);
+
+if(antigo){
+
+antigo.remove();
+
+}
+
+let modal=
+document.createElement('div');
+
+modal.id=
+'modalSemanas';
+
+modal.className=
+'modal';
+
+modal.style.display=
+'flex';
+
+modal.innerHTML=`
+
+<div class="modalBox">
+
+<h2>
+⚙ Gerenciar Semanas
+</h2>
+
+<p style="color:#9db5d4">
+
+Configure suas semanas manualmente
+ou deixe o sistema trocar sozinho.
+
+</p>
+
+<div class="autoBox">
+
+<div>
+
+<b>
+🔄 Troca automática
+</b>
+
+<br>
+
+<small style="color:#9db5d4">
+
+${
+configuracaoSemanas.automatico
+?'O sistema troca pela data.'
+:'Você escolhe manualmente.'
+}
+
+</small>
+
+</div>
+
+<button
+class="btn ${
+configuracaoSemanas.automatico
+?'toggleOn'
+:''
+}"
+onclick="alternarAutomatico()">
+
+${
+configuracaoSemanas.automatico
+?'🟢 ATIVADO'
+:'⚪ DESATIVADO'
+}
+
+</button>
+
+</div>
+
+<div style="
+display:flex;
+gap:8px;
+margin-bottom:15px;
+">
+
+<button
+class="btn primary"
+onclick="novaSemana()">
+
+＋ Nova Semana
+
+</button>
+
+</div>
+
+<div class="weekManager">
+
+${
+configuracaoSemanas
+.semanas
+.map((s,i)=>{
+
+let atual=
+i===
+configuracaoSemanas.semanaAtual;
+
+let encerrada=
+i<
+configuracaoSemanas.semanaAtual;
+
+return `
+
+<div class="
+weekManagerItem
+${atual?'current':''}
+">
+
+<div class="weekManagerInfo">
+
+<b>
+${s.nome}
+</b>
+
+<small>
+📅 ${s.inicio} → ${s.fim}
+</small>
+
+<small style="
+color:${
+atual
+?'#18d57a'
+:encerrada
+?'#9db5d4'
+:'#ffc52e'
+};
+font-weight:bold;
+">
+
+${
+atual
+?'🟢 SEMANA ATUAL'
+:encerrada
+?'🔒 ENCERRADA'
+:'⏳ PRÓXIMA'
+}
+
+</small>
+
+</div>
+
+<div class="weekActions">
+
+${
+!atual
+?`
+
+<button
+class="act"
+onclick="
+definirSemanaAtual(${s.id})
+">
+
+🟢 Ativar
+
+</button>
+
+`
+:''
+}
+
+<button
+class="act"
+onclick="
+editarSemana(${s.id})
+">
+
+✏️ Editar
+
+</button>
+
+<button
+class="act"
+onclick="
+excluirSemana(${s.id})
+">
+
+🗑️
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+}).join('')
+}
+
+</div>
+
+<div class="modalButtons">
+
+<button
+class="cancel"
+onclick="
+fecharModal('modalSemanas')
+">
+
+Fechar
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+document.body.appendChild(modal);
+
+}
+
+/* ==========================
+   MEMBROS
+========================== */
+
+function abrirMembro(index=-1){
+
+membroEditando=index;
+
+let m=
+index===-1
+?
+['','','','','Pendente','—',0]
+:
+dados.membros[index];
+
+document.getElementById('tituloMembro').textContent=
+index===-1
+?
+'Adicionar membro'
+:
+'Editar membro';
+
+document.getElementById('mNome').value=m[0];
+document.getElementById('mRG').value=m[1];
+document.getElementById('mCargo').value=m[2];
+document.getElementById('mDiscord').value=m[3];
+document.getElementById('mStatus').value=m[4];
+document.getElementById('mEntrega').value=m[5];
+
+document.getElementById('modalMembro').style.display='flex';
+
+}
+
+function salvarMembro(){
+
+let novo=[
+
+document.getElementById('mNome').value.trim(),
+
+document.getElementById('mRG').value.trim(),
+
+document.getElementById('mCargo').value.trim(),
+
+document.getElementById('mDiscord').value.trim(),
+
+document.getElementById('mStatus').value,
+
+document.getElementById('mEntrega').value.trim()||'—',
+
+0
+
+];
+
+if(!novo[0]){
+
+alert('Digite o nome do membro.');
+
+return;
+
+}
+
+if(membroEditando===-1){
+
+dados.membros.push(novo);
+
+}else{
+
+novo[6]=
+dados.membros[membroEditando][6];
+
+dados.membros[membroEditando]=novo;
+
+}
+
+salvarDados();
+
+fecharModal('modalMembro');
+
+renderTudo();
+
+}
+
+function excluirMembro(index){
+
+if(
+confirm(
+'Tem certeza que deseja excluir '+
+dados.membros[index][0]+'?'
+)
+){
+
+dados.membros.splice(index,1);
+
+salvarDados();
+
+renderTudo();
+
+}
+
+}
+
+/* ==========================
+   LISTA DE MEMBROS
+========================== */
+
+function renderMembros(){
+
+document.getElementById('membrosLista').innerHTML=
+
+dados.membros
+.map((m,i)=>`
+
+<div class="listItem">
+
+<div>
+
+<b>${m[0]}</b>
+
+<br>
+
+<small>
+RG: ${m[1]} |
+${m[2]} |
+${m[3]}
+</small>
+
+<br>
+
+<span class="status ${
+m[4]==='Entregou'
+?'ent'
+:m[4]==='Pendente'
+?'pen'
+:'no'
+}">
+
+${m[4]}
+
+</span>
+
+</div>
+
+<div>
+
+<button
+class="act"
+onclick="abrirMembro(${i})">
+
+Editar
+
+</button>
+
+<button
+class="act"
+onclick="excluirMembro(${i})">
+
+Excluir
+
+</button>
+
+</div>
+
+</div>
+
+`)
+.join('');
+
+}
+
+/* ==========================
+   RANKING
+========================== */
+
+function renderRanking(){
+
+let ranking=
+dados.membros
+.slice()
+.sort(
+(a,b)=>
+Number(b[6]||0)-
+Number(a[6]||0)
+);
+
+document.getElementById('rankingLista').innerHTML=
+
+ranking
+.map((m,i)=>`
+
+<div class="listItem">
+
+<span>
+
+<b>
+${i+1}º
+</b>
+
+&nbsp;
+
+${m[0]}
+
+<br>
+
+<small>
+${m[2]} • ${m[4]}
+</small>
+
+</span>
+
+<b>
+${m[6]||0} pts
+</b>
+
+</div>
+
+`)
+.join('');
+
+}
+
+function abrirRanking(){
+
+document.getElementById('rankingEdicao').innerHTML=
+
+dados.membros
+.map((m,i)=>`
+
+<div class="listItem">
+
+<span>
+<b>${m[0]}</b>
+</span>
+
+<input
+id="pontos${i}"
+type="number"
+value="${m[6]||0}"
+style="
+width:100px;
+padding:8px;
+background:#031226;
+color:white;
+border:1px solid #164c80;
+border-radius:6px;
+">
+
+</div>
+
+`)
+.join('');
+
+document.getElementById('modalRanking').style.display='flex';
+
+}
+
+function salvarRanking(){
+
+dados.membros.forEach((m,i)=>{
+
+m[6]=
+Number(
+document.getElementById('pontos'+i).value
+)||0;
+
+});
+
+salvarDados();
+
+fecharModal('modalRanking');
+
+renderTudo();
+
+}
+
+/* ==========================
+   HISTÓRICO
+========================== */
+
+function renderHistorico(){
+
+document.getElementById('historicoLista').innerHTML=
+
+dados.membros
+.slice()
+.reverse()
+.map(m=>`
+
+<div class="listItem">
+
+<div>
+
+<b>${m[0]}</b>
+
+<br>
+
+<small>
+Entrega: ${m[5]}
+</small>
+
+</div>
+
+<span class="status ${
+m[4]==='Entregou'
+?'ent'
+:m[4]==='Pendente'
+?'pen'
+:'no'
+}">
+
+${m[4]}
+
+</span>
+
+</div>
+
+`)
+.join('');
+
+}
+
+function adicionarHistorico(){
+
+let nome=
+prompt(
+'Nome do membro:'
+);
+
+if(!nome)return;
+
+let texto=
+prompt(
+'Escreva o registro:'
+);
+
+if(!texto)return;
+
+alert(
+'Registro adicionado para '+
+nome+
+'.'
+);
+
+}
+
+/* ==========================
+   REGRAS
+========================== */
+
+function editarRegras(){
+
+document.getElementById('campoRegras').value=
+dados.regras;
+
+document.getElementById('modalRegras').style.display='flex';
+
+}
+
+function salvarRegras(){
+
+dados.regras=
+document.getElementById('campoRegras').value;
+
+salvarDados();
+
+fecharModal('modalRegras');
+
+renderTudo();
+
+}
+
+/* ==========================
+   SOBRE
+========================== */
+
+function editarSobre(){
+
+document.getElementById('campoSobre').value=
+dados.sobre;
+
+document.getElementById('modalSobre').style.display='flex';
+
+}
+
+function salvarSobre(){
+
+dados.sobre=
+document.getElementById('campoSobre').value;
+
+salvarDados();
+
+fecharModal('modalSobre');
+
+renderTudo();
+
+}
+
+/* ==========================
+   FECHAR MODAL
+========================== */
+
+function fecharModal(id){
+
+let elemento=
+document.getElementById(id);
+
+if(elemento){
+
+elemento.style.display='none';
+
+if(id==='modalSemanas'){
+
+elemento.remove();
+
+}
+
+}
+
+}
+
+/* ==========================
+   LOGIN
+========================== */
+
+async function login(){
+
+let usuario=
+document
+.getElementById('user')
+.value
+.trim()
+.toLowerCase();
+
+let senha=
+document
+.getElementById('pass')
+.value;
+
+try{
+
+let resposta=
+await fetch(
+'/api/login',
+{
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify({
+
+username:usuario,
+
+password:senha
+
+})
+
+}
+);
+
+let resultado=
+await resposta.json();
+
+if(
+resposta.ok &&
+resultado.ok
+){
+
+document
+.getElementById('login')
+.classList.add('hidden');
+
+document
+.getElementById('who')
+.textContent=
+resultado.user.name;
+
+document
+.getElementById('role')
+.textContent=
+resultado.user.role;
+
+document
+.getElementById('avatar')
+.textContent=
+resultado.user.name[0];
+
+}else{
+
+document
+.getElementById('err')
+.textContent=
+resultado.error||
+'Usuário ou senha incorretos.';
+
+}
+
+}catch(e){
+
+document
+.getElementById('err')
+.textContent=
+'Não foi possível conectar ao servidor.';
+
+}
+
+}
+
+/* ==========================
+   INICIAR
+========================== */
+
+renderTudo();
+
+/*
+  Se o automático estiver ligado,
+  verifica a semana a cada 1 minuto.
+*/
+
+verificarSemanaAutomatica();
+
+setInterval(
+verificarSemanaAutomatica,
+60000
+);
+
+</script>
+
+</body>
+</html>
