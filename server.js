@@ -628,6 +628,248 @@ app.delete("/api/membros/:id", async (req, res) => {
 });
 
 // =====================================
+// ADVERTÊNCIAS - TABELA
+// =====================================
+
+async function ensureAdvertenciasTable() {
+  if (!pool) {
+    console.log(
+      "DATABASE_URL não configurada para advertências."
+    );
+    return;
+  }
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS advertencias (
+      id BIGSERIAL PRIMARY KEY,
+      membro_id BIGINT,
+      membro_nome TEXT NOT NULL,
+      motivo TEXT NOT NULL,
+      data TEXT NOT NULL,
+      responsavel TEXT NOT NULL,
+      observacao TEXT DEFAULT ''
+    )
+  `);
+
+  console.log("Tabela de advertências pronta.");
+}
+
+// =====================================
+// LISTAR ADVERTÊNCIAS
+// =====================================
+
+app.get("/api/advertencias", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        ok: false,
+        error: "Não autenticado."
+      });
+    }
+
+    if (!pool) {
+      return res.json({
+        ok: true,
+        advertencias: []
+      });
+    }
+
+    const result = await pool.query(`
+      SELECT
+        id,
+        membro_id,
+        membro_nome,
+        motivo,
+        data,
+        responsavel,
+        observacao
+      FROM advertencias
+      ORDER BY id DESC
+    `);
+
+    res.json({
+      ok: true,
+      advertencias: result.rows
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      ok: false,
+      error: "Erro ao carregar advertências."
+    });
+  }
+});
+
+// =====================================
+// ADICIONAR ADVERTÊNCIA
+// =====================================
+
+app.post("/api/advertencias", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        ok: false,
+        error: "Não autenticado."
+      });
+    }
+
+    if (!pool) {
+      return res.status(503).json({
+        ok: false,
+        error: "Banco de dados não configurado."
+      });
+    }
+
+    const membroId =
+      req.body?.membro_id || null;
+
+    const membroNome =
+      String(
+        req.body?.membro_nome || ""
+      ).trim();
+
+    const motivo =
+      String(
+        req.body?.motivo || ""
+      ).trim();
+
+    const data =
+      String(
+        req.body?.data || ""
+      ).trim();
+
+    const responsavel =
+      String(
+        req.body?.responsavel || ""
+      ).trim();
+
+    const observacao =
+      String(
+        req.body?.observacao || ""
+      ).trim();
+
+    if (
+      !membroNome ||
+      !motivo ||
+      !data ||
+      !responsavel
+    ) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Preencha nome, motivo, data e responsável."
+      });
+    }
+
+    const result = await pool.query(
+      `
+      INSERT INTO advertencias
+      (
+        membro_id,
+        membro_nome,
+        motivo,
+        data,
+        responsavel,
+        observacao
+      )
+      VALUES
+      ($1,$2,$3,$4,$5,$6)
+      RETURNING *
+      `,
+      [
+        membroId,
+        membroNome,
+        motivo,
+        data,
+        responsavel,
+        observacao
+      ]
+    );
+
+    res.json({
+      ok: true,
+      advertencia: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      ok: false,
+      error: "Erro ao salvar advertência."
+    });
+  }
+});
+
+// =====================================
+// EXCLUIR ADVERTÊNCIA
+// =====================================
+
+app.delete(
+  "/api/advertencias/:id",
+  async (req, res) => {
+
+    try {
+
+      if (!req.session.user) {
+        return res.status(401).json({
+          ok: false,
+          error: "Não autenticado."
+        });
+      }
+
+      if (!pool) {
+        return res.status(503).json({
+          ok: false,
+          error: "Banco de dados não configurado."
+        });
+      }
+
+      const id =
+        Number(req.params.id);
+
+      if (!Number.isInteger(id)) {
+        return res.status(400).json({
+          ok: false,
+          error: "ID da advertência inválido."
+        });
+      }
+
+      const result =
+        await pool.query(
+          "DELETE FROM advertencias WHERE id = $1",
+          [id]
+        );
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({
+          ok: false,
+          error: "Advertência não encontrada."
+        });
+      }
+
+      res.json({
+        ok: true
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      res.status(500).json({
+        ok: false,
+        error:
+          "Erro ao excluir advertência."
+      });
+
+    }
+
+  }
+);
+
+// =====================================
 // USUÁRIO LOGADO
 // =====================================
 
@@ -678,7 +920,8 @@ app.get("/api/admin-only", (req, res) => {
 
   res.json({
     ok: true,
-    message: "Acesso administrativo autorizado."
+    message:
+      "Acesso administrativo autorizado."
   });
 });
 
@@ -708,11 +951,14 @@ app.get("*splat", (req, res) => {
 
 async function startServer() {
   try {
+
     ensureData();
 
     await ensureMembersTable();
 
     await ensureConfigTable();
+
+    await ensureAdvertenciasTable();
 
     app.listen(PORT, () => {
       console.log(
@@ -721,6 +967,7 @@ async function startServer() {
     });
 
   } catch (error) {
+
     console.error(
       "Erro ao iniciar o servidor:",
       error
