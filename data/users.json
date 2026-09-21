@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "username": "gabi",
+    "name": "Gabi",
+    "role": "Administrador",
+    "passwordHash": "$2a$10$W2JIkviX4GXevpexmPaES.bqRmgiYqzvgfDEN4JXId1UZlXDjXS9S"
+  },
+  {
+    "id": 2,
+    "username": "lider",
+    "name": "Líder da Escócia",
+    "role": "Administrador",
+    "passwordHash": "$2a$10$HeXd/JzzXlI93A0P1igYYO3F3FXWYfqTXX2yuACkZbMWjmHRzfAei"
+  }
+]
