@@ -1430,27 +1430,104 @@ dados=padrao;
 
 }
 
-if(
-!localStorage.getItem('escocia_membros_limpos_v1')
-){
-
+if(!Array.isArray(dados.membros)){
 dados.membros=[];
-
-localStorage.setItem(
-'escocia_membros_limpos_v1',
-'true'
-);
-
-localStorage.setItem(
-'escocia_dados',
-JSON.stringify(dados)
-);
-
 }
+
+let membroIds=[];
 
 let filtro='Todos';
 
 let membroEditando=-1;
+
+/* ==========================
+   CARREGAR MEMBROS DO SERVIDOR
+========================== */
+
+async function carregarMembrosServidor(){
+
+try{
+
+const resposta=await fetch('/api/membros');
+
+if(!resposta.ok){
+
+console.log('Não foi possível carregar membros.');
+
+return false;
+
+}
+
+const resultado=await resposta.json();
+
+if(!resultado.ok || !Array.isArray(resultado.membros)){
+
+return false;
+
+}
+
+membroIds=[];
+dados.membros=[];
+
+resultado.membros.forEach(item=>{
+
+let id=item.id;
+
+let membro=[
+
+item[0]||'',
+item[1]||'',
+item[2]||'',
+item[3]||'',
+item[4]||'Pendente',
+item[5]||'—',
+Number(item[6]||0)
+
+];
+
+membroIds.push(id);
+
+dados.membros.push(membro);
+
+});
+
+renderTudo();
+
+return true;
+
+}catch(e){
+
+console.error(e);
+
+return false;
+
+}
+
+}
+
+/* ==========================
+   SALVAR DADOS LOCAIS
+========================== */
+
+function salvarDados(){
+
+/*
+  Os membros agora ficam no servidor.
+  Aqui salvamos somente as configurações
+  que continuam locais.
+*/
+
+const copia={
+...dados,
+membros:[]
+};
+
+localStorage.setItem(
+'escocia_dados',
+JSON.stringify(copia)
+);
+
+}
 
 /* ==========================
    SEMANAS
@@ -1479,11 +1556,6 @@ if(
 configuracaoSemanas={
 
 automatico:false,
-
-/*
-  índice 2 = Semana 03
-  Semana 01 e 02 já encerradas
-*/
 
 semanaAtual:2,
 
@@ -1521,19 +1593,7 @@ fim:'03/10/2026'
 
 };
 
-localStorage.setItem(
-'escocia_semanas',
-JSON.stringify(configuracaoSemanas)
-);
-
-}
-
-function salvarDados(){
-
-localStorage.setItem(
-'escocia_dados',
-JSON.stringify(dados)
-);
+salvarSemanas();
 
 }
 
@@ -1613,8 +1673,7 @@ dados.subtitulo;
 
 function render(){
 
-let campo=
-document.getElementById('q');
+let campo=document.getElementById('q');
 
 let busca=
 campo
@@ -1791,13 +1850,12 @@ render();
 }
 
 /* ==========================
-   RENDER SEMANAS
+   SEMANAS
 ========================== */
 
 function renderSemanas(){
 
-let lista=
-configuracaoSemanas.semanas;
+let lista=configuracaoSemanas.semanas;
 
 document.getElementById('weeks').innerHTML=
 
@@ -1841,13 +1899,9 @@ onclick="selecionarSemana(${i})">
 
 ▣
 
-<b>
-${s.nome}
-</b>
+<b>${s.nome}</b>
 
-<small>
-${s.inicio} - ${s.fim}
-</small>
+<small>${s.inicio} - ${s.fim}</small>
 
 <small
 class="weekStatus"
@@ -1867,23 +1921,16 @@ atualizarTituloSemana();
 
 }
 
-/* ==========================
-   SELECIONAR SEMANA
-========================== */
-
 function selecionarSemana(i){
 
-let semanas=
-document.querySelectorAll('.week');
+let semanas=document.querySelectorAll('.week');
 
 semanas.forEach(
 w=>w.classList.remove('active')
 );
 
 if(semanas[i]){
-
 semanas[i].classList.add('active');
-
 }
 
 let semana=
@@ -1892,15 +1939,9 @@ configuracaoSemanas.semanas[i];
 if(!semana)return;
 
 document.getElementById('tableTitle').textContent=
-
-'▣ ENTREGA DE METAS - '+
-semana.nome;
+'▣ ENTREGA DE METAS - '+semana.nome;
 
 }
-
-/* ==========================
-   TITULO DA SEMANA ATUAL
-========================== */
 
 function atualizarTituloSemana(){
 
@@ -1913,15 +1954,9 @@ configuracaoSemanas.semanaAtual
 if(!semana)return;
 
 document.getElementById('tableTitle').textContent=
-
-'▣ ENTREGA DE METAS - '+
-semana.nome;
+'▣ ENTREGA DE METAS - '+semana.nome;
 
 }
-
-/* ==========================
-   CONVERTER DATA
-========================== */
 
 function converterData(data){
 
@@ -1941,39 +1976,26 @@ Number(partes[0])
 
 function novaSemana(){
 
-let lista=
-configuracaoSemanas.semanas;
+let lista=configuracaoSemanas.semanas;
 
-let ultima=
-lista[lista.length-1];
+let ultima=lista[lista.length-1];
 
-let fim=
-converterData(ultima.fim);
+let fim=converterData(ultima.fim);
 
-let inicio=
-new Date(fim);
+let inicio=new Date(fim);
 
-inicio.setDate(
-inicio.getDate()+1
-);
+inicio.setDate(inicio.getDate()+1);
 
-let final=
-new Date(inicio);
+let final=new Date(inicio);
 
-final.setDate(
-final.getDate()+6
-);
+final.setDate(final.getDate()+6);
 
 function formatar(data){
 
-return String(
-data.getDate()
-).padStart(2,'0')
-+'/'+
-String(
-data.getMonth()+1
-).padStart(2,'0')
-+'/'+
+return String(data.getDate()).padStart(2,'0')+
+'/'+
+String(data.getMonth()+1).padStart(2,'0')+
+'/'+
 data.getFullYear();
 
 }
@@ -1984,14 +2006,11 @@ id:Date.now(),
 
 nome:
 'Semana '+
-String(lista.length+1)
-.padStart(2,'0'),
+String(lista.length+1).padStart(2,'0'),
 
-inicio:
-formatar(inicio),
+inicio:formatar(inicio),
 
-fim:
-formatar(final)
+fim:formatar(final)
 
 };
 
@@ -2012,17 +2031,13 @@ abrirGerenciadorSemanas();
 function editarSemana(id){
 
 let semana=
-configuracaoSemanas
-.semanas
+configuracaoSemanas.semanas
 .find(s=>s.id===id);
 
 if(!semana)return;
 
 let nome=
-prompt(
-'Nome da semana:',
-semana.nome
-);
+prompt('Nome da semana:',semana.nome);
 
 if(nome===null)return;
 
@@ -2061,14 +2076,12 @@ abrirGerenciadorSemanas();
 function definirSemanaAtual(id){
 
 let indice=
-configuracaoSemanas
-.semanas
+configuracaoSemanas.semanas
 .findIndex(s=>s.id===id);
 
 if(indice===-1)return;
 
-configuracaoSemanas.semanaAtual=
-indice;
+configuracaoSemanas.semanaAtual=indice;
 
 salvarSemanas();
 
@@ -2076,9 +2089,7 @@ renderSemanas();
 
 alert(
 '🟢 '+
-configuracaoSemanas
-.semanas[indice]
-.nome+
+configuracaoSemanas.semanas[indice].nome+
 ' agora é a semana atual!'
 );
 
@@ -2090,9 +2101,7 @@ configuracaoSemanas
 
 function excluirSemana(id){
 
-if(
-configuracaoSemanas.semanas.length<=1
-){
+if(configuracaoSemanas.semanas.length<=1){
 
 alert(
 'Você precisa manter pelo menos uma semana.'
@@ -2109,13 +2118,10 @@ if(
 )return;
 
 let indice=
-configuracaoSemanas
-.semanas
+configuracaoSemanas.semanas
 .findIndex(s=>s.id===id);
 
-configuracaoSemanas
-.semanas
-.splice(indice,1);
+configuracaoSemanas.semanas.splice(indice,1);
 
 if(
 configuracaoSemanas.semanaAtual>=
@@ -2146,9 +2152,7 @@ configuracaoSemanas.automatico=
 
 salvarSemanas();
 
-if(
-configuracaoSemanas.automatico
-){
+if(configuracaoSemanas.automatico){
 
 verificarSemanaAutomatica();
 
@@ -2160,34 +2164,25 @@ abrirGerenciadorSemanas();
 
 function verificarSemanaAutomatica(){
 
-if(
-!configuracaoSemanas.automatico
-)return;
+if(!configuracaoSemanas.automatico)return;
 
-let hoje=
-new Date();
+let hoje=new Date();
 
-configuracaoSemanas
-.semanas
-.forEach((semana,index)=>{
+configuracaoSemanas.semanas.forEach(
+(semana,index)=>{
 
-let inicio=
-converterData(semana.inicio);
+let inicio=converterData(semana.inicio);
 
-let fim=
-converterData(semana.fim);
+let fim=converterData(semana.fim);
 
-fim.setHours(
-23,59,59
-);
+fim.setHours(23,59,59);
 
 if(
 hoje>=inicio &&
 hoje<=fim
 ){
 
-configuracaoSemanas
-.semanaAtual=index;
+configuracaoSemanas.semanaAtual=index;
 
 }
 
@@ -2206,50 +2201,32 @@ renderSemanas();
 function abrirGerenciadorSemanas(){
 
 let antigo=
-document.getElementById(
-'modalSemanas'
-);
+document.getElementById('modalSemanas');
 
-if(antigo){
+if(antigo)antigo.remove();
 
-antigo.remove();
+let modal=document.createElement('div');
 
-}
-
-let modal=
-document.createElement('div');
-
-modal.id=
-'modalSemanas';
-
-modal.className=
-'modal';
-
-modal.style.display=
-'flex';
+modal.id='modalSemanas';
+modal.className='modal';
+modal.style.display='flex';
 
 modal.innerHTML=`
 
 <div class="modalBox">
 
-<h2>
-⚙ Gerenciar Semanas
-</h2>
+<h2>⚙ Gerenciar Semanas</h2>
 
 <p style="color:#9db5d4">
-
 Configure suas semanas manualmente
 ou deixe o sistema trocar sozinho.
-
 </p>
 
 <div class="autoBox">
 
 <div>
 
-<b>
-🔄 Troca automática
-</b>
+<b>🔄 Troca automática</b>
 
 <br>
 
@@ -2283,11 +2260,7 @@ configuracaoSemanas.automatico
 
 </div>
 
-<div style="
-display:flex;
-gap:8px;
-margin-bottom:15px;
-">
+<div style="display:flex;gap:8px;margin-bottom:15px">
 
 <button
 class="btn primary"
@@ -2302,30 +2275,21 @@ onclick="novaSemana()">
 <div class="weekManager">
 
 ${
-configuracaoSemanas
-.semanas
-.map((s,i)=>{
+configuracaoSemanas.semanas.map((s,i)=>{
 
 let atual=
-i===
-configuracaoSemanas.semanaAtual;
+i===configuracaoSemanas.semanaAtual;
 
 let encerrada=
-i<
-configuracaoSemanas.semanaAtual;
+i<configuracaoSemanas.semanaAtual;
 
 return `
 
-<div class="
-weekManagerItem
-${atual?'current':''}
-">
+<div class="weekManagerItem ${atual?'current':''}">
 
 <div class="weekManagerInfo">
 
-<b>
-${s.nome}
-</b>
+<b>${s.nome}</b>
 
 <small>
 📅 ${s.inicio} → ${s.fim}
@@ -2359,39 +2323,25 @@ atual
 ${
 !atual
 ?`
-
 <button
 class="act"
-onclick="
-definirSemanaAtual(${s.id})
-">
-
+onclick="definirSemanaAtual(${s.id})">
 🟢 Ativar
-
 </button>
-
 `
 :''
 }
 
 <button
 class="act"
-onclick="
-editarSemana(${s.id})
-">
-
+onclick="editarSemana(${s.id})">
 ✏️ Editar
-
 </button>
 
 <button
 class="act"
-onclick="
-excluirSemana(${s.id})
-">
-
+onclick="excluirSemana(${s.id})">
 🗑️
-
 </button>
 
 </div>
@@ -2409,9 +2359,7 @@ excluirSemana(${s.id})
 
 <button
 class="cancel"
-onclick="
-fecharModal('modalSemanas')
-">
+onclick="fecharModal('modalSemanas')">
 
 Fechar
 
@@ -2428,7 +2376,7 @@ document.body.appendChild(modal);
 }
 
 /* ==========================
-   MEMBROS
+   MEMBROS - SERVIDOR
 ========================== */
 
 function abrirMembro(index=-1){
@@ -2441,6 +2389,8 @@ index===-1
 ['','','','','Pendente','—',0]
 :
 dados.membros[index];
+
+if(!m)return;
 
 document.getElementById('tituloMembro').textContent=
 index===-1
@@ -2460,7 +2410,7 @@ document.getElementById('modalMembro').style.display='flex';
 
 }
 
-function salvarMembro(){
+async function salvarMembro(){
 
 let novo=[
 
@@ -2488,41 +2438,167 @@ return;
 
 }
 
+try{
+
+let resposta;
+
 if(membroEditando===-1){
 
-dados.membros.push(novo);
+resposta=await fetch(
+'/api/membros',
+{
+method:'POST',
+headers:{
+'Content-Type':'application/json'
+},
+body:JSON.stringify(novo)
+}
+);
 
 }else{
 
 novo[6]=
-dados.membros[membroEditando][6];
+dados.membros[membroEditando][6]||0;
 
-dados.membros[membroEditando]=novo;
+let id=membroIds[membroEditando];
+
+resposta=await fetch(
+'/api/membros/'+id,
+{
+method:'PUT',
+headers:{
+'Content-Type':'application/json'
+},
+body:JSON.stringify(novo)
+}
+);
 
 }
 
-salvarDados();
+let resultado=await resposta.json();
+
+if(!resposta.ok || !resultado.ok){
+
+alert(
+resultado.error||
+'Não foi possível salvar o membro.'
+);
+
+return;
+
+}
+
+dados.membros=[];
+
+membroIds=[];
+
+resultado.membros.forEach(item=>{
+
+membroIds.push(item.id);
+
+dados.membros.push([
+
+item[0]||'',
+item[1]||'',
+item[2]||'',
+item[3]||'',
+item[4]||'Pendente',
+item[5]||'—',
+Number(item[6]||0)
+
+]);
+
+});
 
 fecharModal('modalMembro');
 
 renderTudo();
 
+}catch(e){
+
+console.error(e);
+
+alert(
+'Não foi possível conectar ao servidor.'
+);
+
 }
 
-function excluirMembro(index){
+}
+
+async function excluirMembro(index){
+
+if(!dados.membros[index])return;
 
 if(
-confirm(
+!confirm(
 'Tem certeza que deseja excluir '+
 dados.membros[index][0]+'?'
 )
-){
+)return;
 
-dados.membros.splice(index,1);
+let id=membroIds[index];
 
-salvarDados();
+if(!id){
+
+alert('ID do membro não encontrado.');
+
+return;
+
+}
+
+try{
+
+let resposta=await fetch(
+'/api/membros/'+id,
+{
+method:'DELETE'
+}
+);
+
+let resultado=await resposta.json();
+
+if(!resposta.ok || !resultado.ok){
+
+alert(
+resultado.error||
+'Não foi possível excluir.'
+);
+
+return;
+
+}
+
+dados.membros=[];
+membroIds=[];
+
+resultado.membros.forEach(item=>{
+
+membroIds.push(item.id);
+
+dados.membros.push([
+
+item[0]||'',
+item[1]||'',
+item[2]||'',
+item[3]||'',
+item[4]||'Pendente',
+item[5]||'—',
+Number(item[6]||0)
+
+]);
+
+});
 
 renderTudo();
+
+}catch(e){
+
+console.error(e);
+
+alert(
+'Não foi possível conectar ao servidor.'
+);
 
 }
 
@@ -2620,9 +2696,7 @@ ranking
 
 <span>
 
-<b>
-${i+1}º
-</b>
+<b>${i+1}º</b>
 
 &nbsp;
 
@@ -2682,22 +2756,53 @@ document.getElementById('modalRanking').style.display='flex';
 
 }
 
-function salvarRanking(){
+async function salvarRanking(){
 
-dados.membros.forEach((m,i)=>{
+try{
+
+for(let i=0;i<dados.membros.length;i++){
+
+let m=dados.membros[i];
 
 m[6]=
 Number(
 document.getElementById('pontos'+i).value
 )||0;
 
-});
+let id=membroIds[i];
 
-salvarDados();
+if(id){
+
+await fetch(
+'/api/membros/'+id,
+{
+method:'PUT',
+headers:{
+'Content-Type':'application/json'
+},
+body:JSON.stringify(m)
+}
+);
+
+}
+
+}
+
+await carregarMembrosServidor();
 
 fecharModal('modalRanking');
 
 renderTudo();
+
+}catch(e){
+
+console.error(e);
+
+alert(
+'Não foi possível salvar o ranking.'
+);
+
+}
 
 }
 
@@ -2749,24 +2854,16 @@ ${m[4]}
 
 function adicionarHistorico(){
 
-let nome=
-prompt(
-'Nome do membro:'
-);
+let nome=prompt('Nome do membro:');
 
 if(!nome)return;
 
-let texto=
-prompt(
-'Escreva o registro:'
-);
+let texto=prompt('Escreva o registro:');
 
 if(!texto)return;
 
 alert(
-'Registro adicionado para '+
-nome+
-'.'
+'Registro adicionado para '+nome+'.'
 );
 
 }
@@ -2837,9 +2934,7 @@ if(elemento){
 elemento.style.display='none';
 
 if(id==='modalSemanas'){
-
 elemento.remove();
-
 }
 
 }
@@ -2914,6 +3009,10 @@ document
 .textContent=
 resultado.user.name[0];
 
+/* CARREGA OS MEMBROS DO SERVIDOR */
+
+await carregarMembrosServidor();
+
 }else{
 
 document
@@ -2925,6 +3024,8 @@ resultado.error||
 }
 
 }catch(e){
+
+console.error(e);
 
 document
 .getElementById('err')
@@ -2941,11 +3042,6 @@ document
 
 renderTudo();
 
-/*
-  Se o automático estiver ligado,
-  verifica a semana a cada 1 minuto.
-*/
-
 verificarSemanaAutomatica();
 
 setInterval(
@@ -2954,6 +3050,5 @@ verificarSemanaAutomatica,
 );
 
 </script>
-
 </body>
 </html>
