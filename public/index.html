@@ -1385,18 +1385,7 @@ Cancelar
 
 const padrao = {
 
-membros:[
-['Mell Felix','894','Gerente','melzinhaa','Entregou','08/09 - 21:34',100],
-['Ster','12345','Cria','sterx','Entregou','09/09 - 18:20',90],
-['Bryan','67890','Cria','bryan#123','Não entregou','—',20],
-['Wendell','54321','Olheiro','wendellz','Entregou','10/09 - 19:02',85],
-['Pedrinn','98765','Cria','pedrinnx','Pendente','—',50],
-['Jotta','11223','Morador','jotta#456','Não entregou','—',15],
-['Yan','33445','Cria','yan.rlk','Entregou','11/09 - 20:47',80],
-['Lock','55667','Olheiro','lockz','Entregou','12/09 - 17:32',75],
-['Alves','77889','Cria','alves#777','Não entregou','—',10],
-['Ruiva','99001','Morador','ruiva','Pendente','—',45]
-],
+membros:[],
 
 semanas:[
 ['Semana 01','06/09 - 12/09'],
@@ -1438,6 +1427,24 @@ localStorage.getItem('escocia_dados')
 }catch(e){
 
 dados=padrao;
+
+}
+
+if(
+!localStorage.getItem('escocia_membros_limpos_v1')
+){
+
+dados.membros=[];
+
+localStorage.setItem(
+'escocia_membros_limpos_v1',
+'true'
+);
+
+localStorage.setItem(
+'escocia_dados',
+JSON.stringify(dados)
+);
 
 }
 
